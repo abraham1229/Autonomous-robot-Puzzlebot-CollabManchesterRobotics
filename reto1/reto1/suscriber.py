@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
-from msgs_clase.msg import Vector  
+from msgs_clase.msg import Vector   # type: ignore
 import math
 
 
@@ -30,23 +30,25 @@ class My_Talker_Params(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         #Se despliega en pantalla que se ha inicializado el nodo
         self.get_logger().info('Talker params node initialized')
-        self.velI = 0
-        self.velD = 0
+        self.velI = 0.0
+        self.velD = 0.0
         
     
     def signal_callback1(self, msg):
-        self.velI = msg
+        if msg is not None:
+            self.velI = msg.data
 
     def signal_callback2(self, msg):
-        #Se hace la lectura de los parámetros a utilizar
-        self.velD = msg
+        if msg is not None:
+            self.velD = msg.data
+
           
     def timer_callback(self):
         #Publicar los parámetros obtenidos con ayuda de msg personalizado.
         msgDato = Vector()
         msgDato.x = self.velD
         msgDato.y = self.velI
-        msgDato.z = 0
+        msgDato.z = 0.0
         self.pub_info.publish(msgDato)
         
 
