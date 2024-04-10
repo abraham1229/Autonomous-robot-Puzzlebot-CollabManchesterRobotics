@@ -27,7 +27,7 @@ def generate_launch_description():
         package='rqt_plot',
         executable='rqt_plot',
         output='screen',
-        arguments=[{'args': '/ri_signal/data' '/ri_signal_reconstructed/data'}],  # Se especifican los tópicos
+        arguments=[{'args': '/VelocityEncL/data' '/VelocityEncR/data'}],  # Se especifican los tópicos
     )
 
     l_d = LaunchDescription([talker_node,rqt_graph_node, rqt_plot_node])
