@@ -10,7 +10,7 @@ class My_Talker_Params(Node):
     #Se inicializa el nodo
     def __init__(self):
         #Se crear el nodo que será encargado de publicar la señal
-        super().__init__('ri_Setpoint')
+        super().__init__('Path_generator')
         #Se declara la lista de parámetros a utilizar
         self.declare_parameters(
             namespace='',
@@ -35,7 +35,7 @@ class My_Talker_Params(Node):
             ])
         
         # Frecuencia de publicación de 10Hz
-        self.pub = self.create_publisher(Float32, 'ri_setpoint', 1000)  
+        self.pub = self.create_publisher(Float32, 'path_generator', 1000)  
         # Período de temporizador para 10Hz
         timer_period = 0.1 
         #Se declara el timer que llamará al callback
