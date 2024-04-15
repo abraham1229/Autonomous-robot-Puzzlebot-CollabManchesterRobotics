@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
+from msgs_clase.msg import Path   # type: ignore
 from scipy import signal
 import math
 
@@ -26,27 +27,63 @@ class My_Talker_Params(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         #Se notifica que ha sido creado correctamente
         self.get_logger().info('Path generator node initialized')
+        self.msg = Path()
 
     def timer_callback(self):
 
         ri_type = self.get_parameter('ri_type').get_parameter_value().integer_value
         #Se generan condiciones para las 5 señales y lectura de sus params 
-        if ri_type == 0:
-            pass
+        if ri_type == 0: #Condicion del cuadrado
+            self.msg.x1 = 1
+            self.msg.y1 = 0
+            self.msg.x2 = 1
+            self.msg.y2 = 1
+            self.msg.x3 = 0
+            self.msg.y3 = 1
+            self.msg.x4 = 0
+            self.msg.y4 = 0
 
         elif ri_type == 1:
-            pass
-        elif ri_type == 2:
-            pass
-        elif ri_type == 3:
-            pass
-        else:
-            pass
+            self.msg.x1 = 1
+            self.msg.y1 = 1
+            self.msg.x2 = 4
+            self.msg.y2 = 4
+            self.msg.x3 = 2
+            self.msg.y3 = 2
+            self.msg.x4 = 0
+            self.msg.y4 = 0
 
-        # Publicar el valors de la señal
-        msg = Float32()
+        elif ri_type == 2:
+            self.msg.x1 = 0
+            self.msg.y1 = 4
+            self.msg.x2 = 5
+            self.msg.y2 = 8
+            self.msg.x3 = 2
+            self.msg.y3 = 6
+            self.msg.x4 = 0
+            self.msg.y4 = 0
+
+        elif ri_type == 3:
+            self.msg.x1 = 0
+            self.msg.y1 = 4
+            self.msg.x2 = 0
+            self.msg.y2 = 8
+            self.msg.x3 = 2
+            self.msg.y3 = 4
+            self.msg.x4 = 0
+            self.msg.y4 = 7
+        else:
+            self.msg.x1 = 1
+            self.msg.y1 = 0
+            self.msg.x2 = 1
+            self.msg.y2 = 1
+            self.msg.x3 = 0
+            self.msg.y3 = 1
+            self.msg.x4 = 0
+            self.msg.y4 = 0
+
         # msg.data = signal_value
-        self.pub.publish(msg)
+        self.pub.publish(self.msg)
 
 #La función que será llamada según nuestro setup
 def main(args=None):
