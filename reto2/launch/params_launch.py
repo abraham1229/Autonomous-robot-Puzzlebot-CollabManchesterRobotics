@@ -21,6 +21,13 @@ def generate_launch_description():
         parameters = [config]
     )
 
+    #Se corre el signal generator
+    controller_node = Node(
+        package='reto2',
+        executable='controller',
+        output='screen'
+    )
+
     #Se ejecuta el graph
     rqt_graph_node = Node(
         package='rqt_graph',
@@ -36,5 +43,5 @@ def generate_launch_description():
         arguments=[],  # Se especifican los tópicos a graficar
     )
 
-    l_d = LaunchDescription([talker_node, rqt_graph_node, rqt_plot_node])
+    l_d = LaunchDescription([talker_node, controller_node,rqt_graph_node, rqt_plot_node])
     return l_d

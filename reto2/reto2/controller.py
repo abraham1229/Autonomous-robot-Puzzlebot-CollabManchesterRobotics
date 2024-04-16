@@ -5,8 +5,7 @@ from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
 
-
-class My_Talker_Params(Node):
+class Controller(Node):
     def __init__(self):
         super().__init__('Controller')
         
@@ -19,7 +18,7 @@ class My_Talker_Params(Node):
         #Se hacen las suscripciones pertinentes
         self.subscription_odometria = self.create_subscription(
             Vector,
-            'ri_Odometria',
+            'odometria',
             self.signal_callback1,
             rclpy.qos.qos_profile_sensor_data ) #Se debe de incluir la lectura de datos
         
@@ -49,8 +48,8 @@ class My_Talker_Params(Node):
         #Se declaran las velocidades
         self.velL = 0.0
         self.velA = 0.0
+        
 
-    
     #Lee los datos del nodo de la llanta izquierda
     def signal_callback1(self, msg):
         if msg is not None:
@@ -66,23 +65,21 @@ class My_Talker_Params(Node):
 
 
     def timer_callback(self):
-        twist_msg = Twist()
+        self.twist_msg = Twist()
         self.velL = 0.1
         self.velA = 0.0
         if self.Posx >= self.x1:
             self.velL = 0.0
         
         
-        twist_msg.linear.x = self.velL
-        twist_msg.angular.z = self.velA
-        self.pub_cmd_vel.publish(twist_msg)
-
-
+        self.twist_msg.linear.x = self.velL
+        self.twist_msg.angular.z = self.velA
+        self.pub_cmd_vel.publish(self.twist_msg)
 
 
 def main(args=None):
     rclpy.init(args=args)
-    m_t_p = My_Talker_Params()
+    m_t_p = Controller()
     rclpy.spin(m_t_p)
     m_t_p.destroy_node()
     rclpy.shutdown()
