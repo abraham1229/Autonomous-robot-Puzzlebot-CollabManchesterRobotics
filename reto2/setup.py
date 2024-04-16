@@ -25,7 +25,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'path_generator = reto2.path_generator:main'
+            'path_generator = reto2.path_generator:main',
+            'controller = reto2.controller:main'
         ],
     },
 )

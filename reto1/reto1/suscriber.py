@@ -23,7 +23,7 @@ class My_Talker_Params(Node):
             self.signal_callback2,
             rclpy.qos.qos_profile_sensor_data)
         #Se crea el publicador que mandará mensaje personalizado
-        self.pub_info = self.create_publisher(Vector, 'ri_odometria', 1000)
+        self.pub_info = self.create_publisher(Vector, 'odometria', 1000)
         # Período de temporizador para 10Hz
         timer_period = 0.1 
         #Se declara el timer que llamará al callback
