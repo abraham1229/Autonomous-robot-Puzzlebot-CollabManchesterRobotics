@@ -10,6 +10,7 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
+        self.pub_time_path = self.create_publisher(Float32, 'path_time', 1000)
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
@@ -49,8 +50,7 @@ class Controller(Node):
         self.velL = 0.0
         self.velA = 0.0
 
-        self.bandera = 1
-        
+        self.bandera = 1       
 
     #Lee los datos del nodo de la llanta izquierda
     def signal_callback1(self, msg):
@@ -130,7 +130,10 @@ class Controller(Node):
         
         self.twist_msg.linear.x = self.velL
         self.twist_msg.angular.z = self.velA
+        tiempo_trayectoria = Float32()
+        tiempo_trayectoria.data = self.angulo
         self.pub_cmd_vel.publish(self.twist_msg)
+        self.pub_time_path.publish(tiempo_trayectoria)
 
 
 def main(args=None):
