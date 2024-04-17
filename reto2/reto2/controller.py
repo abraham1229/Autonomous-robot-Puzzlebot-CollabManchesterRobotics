@@ -52,7 +52,7 @@ class Controller(Node):
 
         self.bandera = 1       
 
-    #Lee los datos
+    #Lee los datos de odometría
     def signal_callback1(self, msg):
         if msg is not None:
             self.Posx = msg.x
