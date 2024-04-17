@@ -84,7 +84,7 @@ class Controller(Node):
                     self.velA = 0.0
 
                 # Si estamos lo suficientemente cerca del punto, pasa al siguiente punto
-                if distancia_actual >= self.distancia_meta:
+                if distancia_actual >= distancia_meta:
                     self.nPunto += 1
 
             # Si hemos alcanzado el último punto en la trayectoria, detén el robot
