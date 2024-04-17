@@ -13,6 +13,12 @@ def generate_launch_description():
         'params.yaml'
         )
     
+
+    odo_node = Node(
+        package='reto1',
+        executable='suscriber',
+        output='screen'
+    )
     #Se corre el signal generator
     talker_node = Node(
         package='reto2',
@@ -43,5 +49,5 @@ def generate_launch_description():
         arguments=[],  # Se especifican los tópicos a graficar
     )
 
-    l_d = LaunchDescription([talker_node, controller_node,rqt_graph_node, rqt_plot_node])
+    l_d = LaunchDescription([talker_node, controller_node,odo_node,rqt_graph_node, rqt_plot_node])
     return l_d

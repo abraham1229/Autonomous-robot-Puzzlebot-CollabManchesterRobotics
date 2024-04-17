@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
-from msgs_clase.msg import Vector, Path   # Asegúrate de que el mensaje Path esté definido correctamente en msgs_clase.msg
+from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
 
@@ -15,84 +15,119 @@ class Controller(Node):
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
 
-        # Se hacen las suscripciones pertinentes
+        #Se hacen las suscripciones pertinentes
         self.subscription_odometria = self.create_subscription(
             Vector,
             'odometria',
             self.signal_callback1,
-            rclpy.qos.qos_profile_sensor_data )  # Se debe de incluir la lectura de datos
+            rclpy.qos.qos_profile_sensor_data ) #Se debe de incluir la lectura de datos
         
-        # Se hacen las suscripciones pertinentes
+        #Se hacen las suscripciones pertinentes
         self.subscription_path = self.create_subscription(
             Path,
             'path_generator',
             self.signal_callback2,
-            rclpy.qos.qos_profile_sensor_data )  # Se debe de incluir la lectura de datos
+            rclpy.qos.qos_profile_sensor_data ) #Se debe de incluir la lectura de datos
 
 
-        # Se declaran las variables para las coordenadas de la trayectoria
-        self.trayectoria = []
-        self.nPunto = 0
-        
-        # Se declaran las variables para las velocidades
+        #Se declaran las variables para las coordenadas de la trayectoria
+        self.x1 = 0.0
+        self.y1 = 0.0
+        self.x2 = 0.0
+        self.y2 = 0.0
+        self.x3 = 0.0
+        self.y3 = 0.0
+        self.x4 = 0.0
+        self.y4 = 0.0
+
+        #Se declaran las variables para las velocidades
         self.Posx = 0.0
         self.Posy = 0.0
         self.Postheta = 0.0
 
-        # Se declaran las velocidades
+        #Se declaran las velocidades
         self.velL = 0.0
         self.velA = 0.0
 
-    # Lee los datos del nodo de la odometría
+        self.bandera = 1
+        
+
+    #Lee los datos del nodo de la llanta izquierda
     def signal_callback1(self, msg):
         if msg is not None:
             self.Posx = msg.x
             self.Posy = msg.y
             self.Postheta = msg.theta
 
-    # Lee los datos del nodo del generador de trayectorias
+    #Lee los datos del nodo de la llanta izquierda
     def signal_callback2(self, msg):
         if msg is not None:
-            self.trayectoria = [(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4)]
+            self.x1 = msg.x1
+            self.y1 = msg.y1
+            self.x2 = msg.x2
+            self.y2 = msg.y2
+            self.x3 = msg.x3
+            self.y3 = msg.y3
+            self.x4 = msg.x4
+            self.y4 = msg.y4
+
 
     def timer_callback(self):
+        #Se crea el tipo de mensaje para mandar a cmd_vel
         self.twist_msg = Twist()
-        
-        # Verifica si hay puntos en la trayectoria
-        if self.trayectoria:
-            # Si hay puntos en la trayectoria y no hemos alcanzado el último punto
-            if self.nPunto < len(self.trayectoria):
-                punto_meta = self.trayectoria[self.nPunto]
-                punto_x, punto_y = punto_meta
 
-                angulo_meta = math.atan2(punto_y, punto_x)
-
-                
-
-                # Normaliza el ángulo de diferencia entre -pi y pi para asegurar el menor giro
-                angulo_diferencia = math.atan2(math.sin(angulo_meta), math.cos(angulo_meta))
-                distancia_meta = math.sqrt(math.pow(punto_x,2)+math.pow(punto_y,2))
-                distancia_actual = math.sqrt(math.pow(self.Posx,2)+math.pow(self.Posy,2))
-
-                # Establece las velocidades angulares para girar hacia el punto
-                self.velL = 0.0
-                self.velA = 0.2 if angulo_diferencia > 0 else -0.2
-
-                # Si el ángulo hacia el punto es pequeño, avanza hacia él
-                if abs(angulo_diferencia) < 0.1:
-                    self.velL = 0.2
-                    self.velA = 0.0
-
-                # Si estamos lo suficientemente cerca del punto, pasa al siguiente punto
-                if distancia_actual >= distancia_meta:
-                    self.nPunto += 1
-
-            # Si hemos alcanzado el último punto en la trayectoria, detén el robot
-            else:
-                self.velL = 0.0
+        #Primer trazo
+        # if self.bandera == 0:
+        #     self.angulo = math.atan2(self.y1,self.x1)
+        #     self.velL = 0.0
+        #     self.velA = 0.1
+        #     if self.Postheta >= self.angulo:
+        #         self.velA = 0.0
+        #         self.velL = 0.1
+        #         self.bandera = 1
+            # else:
+            #     self.velL = 0.1
+            #     self.velA = 0.0
+            #     self.bandera = 1
+        self.velA = 0.0
+        self.velL = 0.1    
+        if self.Posx >= self.x1 and self.bandera == 1:
+            self.velL = 0.0
+            self.velA = 0.1
+            self.angulo = math.atan2((self.y2-self.y1),(self.x2-self.x1))
+            if self.Postheta >= 1.5:
                 self.velA = 0.0
+                self.velL = 0.1
+                self.bandera = 2
+        #Segundo trazo
+        if self.Posy >= self.y2 and self.bandera == 2:
+            self.velL = 0.0
+            self.velA = 0.1
+            self.angulo = math.atan2((self.y3-self.y2),(self.x3-self.x2))
+            if self.Postheta >= self.angulo:  
+                self.velA = 0.0
+                self.velL = 0.1
+                self.bandera = 3
+        #Tercer trazo
+        if self.Posx <= self.x3 and self.bandera == 3:
+            self.velL = 0.0
+            self.velA = 0.1
+            self.angulo = math.atan2((self.y4-self.y3),(self.x4-self.x3))
+            if self.angulo < 0:
+                self.angulo = self.angulo + 2*math.pi
+            if self.Postheta >= self.angulo:
+                self.velA = 0.0
+                self.velL = 0.1
+                self.bandera = 4
+        #Cuarto trazo
+        if self.Posy <= self.y4 and self.bandera == 4:
+            self.velL = 0.0
+            self.velA = 0.0
+            # if self.Postheta >= 6.0:
+            #     self.velA = 0.0
+            #     self.velL = 0.0
 
-        # Publica las velocidades calculadas
+        
         self.twist_msg.linear.x = self.velL
         self.twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(self.twist_msg)
