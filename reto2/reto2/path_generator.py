@@ -15,6 +15,8 @@ class My_Talker_Params(Node):
             namespace='',
             parameters=[
                 ('type', rclpy.Parameter.Type.INTEGER),
+                ('velocidad_lineal', rclpy.Parameter.Type.DOUBLE),
+                ('velocidad_angular', rclpy.Parameter.Type.DOUBLE),
             ])
         
         self.pub = self.create_publisher(Path, 'path_generator', 1000)
@@ -22,11 +24,14 @@ class My_Talker_Params(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Path generator node initialized')
         self.msg = Path()
+        self.velocidaLineal = 0.0
+        self.velocidaAngular = 0.0
 
     def timer_callback(self):
         ri_type = self.get_parameter('type').get_parameter_value().integer_value
-        
-        
+        self.msg.vel_lineal = self.get_parameter('velocidad_lineal').get_parameter_value().double_value
+        self.msg.vel_angular = self.get_parameter('velocidad_angular').get_parameter_value().double_value
+
         if ri_type == 0:
             # Square condition
             self.msg.x1 = 1.0

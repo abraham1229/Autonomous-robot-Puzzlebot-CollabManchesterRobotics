@@ -6,3 +6,5 @@ float64 x3
 float64 y3
 float64 x4
 float64 y4
+float64 vel_lineal
+float64 vel_angular
