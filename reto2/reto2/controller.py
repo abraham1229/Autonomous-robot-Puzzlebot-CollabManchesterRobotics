@@ -61,7 +61,7 @@ class Controller(Node):
 
     #Lee los datos del nodo de la llanta izquierda
     def signal_callback2(self, msg):
-        if msg is not None:
+        if msg is not None and self.bandera == 1:
             self.x1 = msg.x1
             self.y1 = msg.y1
             self.x2 = msg.x2
@@ -94,33 +94,33 @@ class Controller(Node):
         if self.Posx >= self.x1 and self.bandera == 1:
             self.velL = 0.0
             self.velA = 0.1
-            self.angulo = math.atan2((self.y2-self.y1),(self.x2-self.x1))
+            self.angulo = round(math.atan2((self.y2-self.y1),(self.x2-self.x1)),2)
             if self.Postheta >= 1.5:
                 self.velA = 0.0
                 self.velL = 0.1
                 self.bandera = 2
         #Segundo trazo
-        if self.Posy >= self.y2 and self.bandera == 2:
+        elif self.Posy >= self.y2 and self.bandera == 2:
             self.velL = 0.0
             self.velA = 0.1
-            self.angulo = math.atan2((self.y3-self.y2),(self.x3-self.x2))
+            self.angulo = round(math.atan2((self.y3-self.y2),(self.x3-self.x2)),2)
             if self.Postheta >= self.angulo:  
                 self.velA = 0.0
                 self.velL = 0.1
                 self.bandera = 3
         #Tercer trazo
-        if self.Posx <= self.x3 and self.bandera == 3:
+        elif self.Posx <= self.x3 and self.bandera == 3:
             self.velL = 0.0
             self.velA = 0.1
-            self.angulo = math.atan2((self.y4-self.y3),(self.x4-self.x3))
+            self.angulo = round(math.atan2((self.y4-self.y3),(self.x4-self.x3)),2)
             if self.angulo < 0:
-                self.angulo = self.angulo + 2*math.pi
+                self.angulo = self.angulo + 6
             if self.Postheta >= self.angulo:
                 self.velA = 0.0
                 self.velL = 0.1
                 self.bandera = 4
         #Cuarto trazo
-        if self.Posy <= self.y4 and self.bandera == 4:
+        elif self.Posy <= self.y4 and self.bandera == 4:
             self.velL = 0.0
             self.velA = 0.0
             # if self.Postheta >= 6.0:
