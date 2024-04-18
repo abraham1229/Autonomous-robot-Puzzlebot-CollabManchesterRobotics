@@ -44,13 +44,13 @@ class My_Talker_Params(Node):
             self.msg.y4 = 0.0
         
         if ri_type == 1:
-            self.msg.x1 = 2.0
+            self.msg.x1 = 1.0
             self.msg.y1 = 1.0
-            self.msg.x2 = 1.0
-            self.msg.y2 = 3.0
-            self.msg.x3 = 4.0
-            self.msg.y3 = 4.0
-            self.msg.x4 = 0.0
+            self.msg.x2 = 0.0
+            self.msg.y2 = 2.0
+            self.msg.x3 = 2.0
+            self.msg.y3 = 2.0
+            self.msg.x4 = 2.0
             self.msg.y4 = 0.0
         
 
