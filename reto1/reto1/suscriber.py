@@ -78,7 +78,7 @@ class My_Talker_Params(Node):
         self.velLineal = self.r*((self.velD+self.velI)/2)
 
         if self.cambioSingo == 0:
-            if self.theha >= 3:
+            if self.theha >= 3.14:
                 self.theha = -3.14
                 self.cambioSingo = 1
             else:

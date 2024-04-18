@@ -91,7 +91,7 @@ class Controller(Node):
             self.velA = 0.0
             self.velL = 0.0
 
-            if self.distancia > 0.07:
+            if self.distancia > 0.1:
                 self.velA = 0.0
                 self.velL = 0.1
             else:
