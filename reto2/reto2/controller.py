@@ -11,7 +11,7 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
-        timer_period = 0.05
+        timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
@@ -57,7 +57,7 @@ class Controller(Node):
     # Callback para recibir los puntos de la trayectoria
     def signal_callback2(self, msg):
         if msg is not None:
-            self.trayectoria = [(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4)]
+            self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4)]
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
@@ -67,36 +67,45 @@ class Controller(Node):
             self.get_logger().warn('No hay puntos en la trayectoria')
             return
         
-        if self.indice_punto_actual >= len(self.trayectoria):
-                self.get_logger().info('Se alcanzó el final de la trayectoria')
-                # Detener el robot
-                self.velL = 0.0
-                self.velA = 0.0
-                return
+        # if self.indice_punto_actual >= len(self.trayectoria):
+        #         self.get_logger().info('Se alcanzó el final de la trayectoria')
+        #         # Detener el robot
+        #         self.velL = 0.0
+        #         self.velA = 0.0
+        #         return
         
         # Obtener las coordenadas del punto actual en la trayectoria
-        target_x, target_y = self.trayectoria[self.indice_punto_actual]
+        target_x, target_y = self.trayectoria[self.indice_punto_actual+1]
+
+        target_x_ant, target_y_ant = self.trayectoria[self.indice_punto_actual]
+        
+        
 
         # Calcular las coordenadas polares del punto objetivo
         self.distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
-        self.angulo_objetivo = math.atan2(target_y - self.Posy, target_x - self.Posx)
+        self.angulo_objetivo = math.atan2(target_y - target_y_ant, target_x - target_x_ant)
 
-        if self.indice_punto_actual == 3:
-            temporal = 2*math.pi
 
         
-        if self.angulo_objetivo +temporal >= self.Postheta+0.07:
+        if self.angulo_objetivo < self.Postheta+0.15 and self.angulo_objetivo > self.Postheta-0.15:
+            self.velA = 0.0
+            self.velL = 0.0
+
+            if self.distancia > 0.07:
+                self.velA = 0.0
+                self.velL = 0.1
+            else:
+
+                self.indice_punto_actual += 1
+        else:
             self.velA = 0.1
             self.velL = 0.0
-        elif self.distancia > 0.1:
-            self.velA = 0.0
-            self.velL = 0.1
-        else:
-            self.velA = 0.0
-            self.velL = 0.0
-            self.indice_punto_actual += 1
-        
-             # Imprimir el valor de indice_punto_actual cada vez que cambie
+
+        self.get_logger().info(f'------------------------------------------------------------')
+        self.get_logger().info(f'Angulars meta y odo ({self.angulo_objetivo}, {self.Postheta})')
+        self.get_logger().info(f'Distancias y punto ({self.distancia}, {self.indice_punto_actual})')
+
+
 
         
 

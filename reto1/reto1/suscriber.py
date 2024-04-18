@@ -79,17 +79,17 @@ class My_Talker_Params(Node):
 
         if self.cambioSingo == 0:
             if self.theha >= 3:
-                self.theha = -1*self.velocidadTheha*self.periodo_lectura
+                self.theha = -3.14
                 self.cambioSingo = 1
             else:
                 self.theha += self.velocidadTheha*self.periodo_lectura
         
         elif self.cambioSingo == 1:
-            if self.theha <= -3:
-                self.theha = -1*self.velocidadTheha*self.periodo_lectura
+            if self.theha >= -0.5:
+                self.theha = 0.0
                 self.cambioSingo = 0
             else:
-                self.theha -= self.velocidadTheha*self.periodo_lectura
+                self.theha += self.velocidadTheha*self.periodo_lectura
                 
 
 
