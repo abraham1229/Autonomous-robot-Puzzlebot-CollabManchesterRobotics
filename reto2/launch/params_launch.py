@@ -48,6 +48,6 @@ def generate_launch_description():
         output='screen',
         arguments=[],  # Se especifican los tópicos a graficar
     )
-
-    l_d = LaunchDescription([odo_node,talker_node, controller_node,rqt_graph_node, rqt_plot_node])
+    #,rqt_graph_node, rqt_plot_node
+    l_d = LaunchDescription([odo_node,talker_node, controller_node])
     return l_d

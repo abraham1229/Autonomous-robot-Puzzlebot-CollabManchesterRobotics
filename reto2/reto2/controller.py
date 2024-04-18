@@ -5,13 +5,13 @@ from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
 
+
 class Controller(Node):
     def __init__(self):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
-        self.pub_time_path = self.create_publisher(Float32, 'path_time', 1000)
-        timer_period = 0.1
+        timer_period = 0.05
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
@@ -28,112 +28,85 @@ class Controller(Node):
             Path,
             'path_generator',
             self.signal_callback2,
-            rclpy.qos.qos_profile_sensor_data ) #Se debe de incluir la lectura de datos
+            rclpy.qos.qos_profile_sensor_data )
 
-
-        #Se declaran las variables para las coordenadas de la trayectoria
-        self.x1 = 0.0
-        self.y1 = 0.0
-        self.x2 = 0.0
-        self.y2 = 0.0
-        self.x3 = 0.0
-        self.y3 = 0.0
-        self.x4 = 0.0
-        self.y4 = 0.0
-
-        #Se declaran las variables para las velocidades
+        # Variables para almacenar la posición actual del robot
         self.Posx = 0.0
         self.Posy = 0.0
         self.Postheta = 0.0
 
-        #Se declaran las velocidades
+        # Lista para almacenar los puntos de la trayectoria
+        self.trayectoria = []
+
+        # Índice del punto actual en la trayectoria
+        self.indice_punto_actual = 0
+
+        # Velocidades lineal y angular del robot
         self.velL = 0.0
         self.velA = 0.0
+        self.distancia = 0.0
+        self.angulo_objetivo = 0.0
 
-        self.bandera = 1       
-
-    #Lee los datos de odometría
+    # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
         if msg is not None:
             self.Posx = msg.x
             self.Posy = msg.y
             self.Postheta = msg.theta
 
-    #Lee los datos del nodo de la llanta izquierda
+    # Callback para recibir los puntos de la trayectoria
     def signal_callback2(self, msg):
-        if msg is not None and self.bandera == 1:
-            self.x1 = msg.x1
-            self.y1 = msg.y1
-            self.x2 = msg.x2
-            self.y2 = msg.y2
-            self.x3 = msg.x3
-            self.y3 = msg.y3
-            self.x4 = msg.x4
-            self.y4 = msg.y4
+        if msg is not None:
+            self.trayectoria = [(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4)]
 
-
+    # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
-        #Se crea el tipo de mensaje para mandar a cmd_vel
-        self.twist_msg = Twist()
+        temporal = 0
+        # Verificar si hay puntos en la trayectoria
+        if not self.trayectoria:
+            self.get_logger().warn('No hay puntos en la trayectoria')
+            return
+        
+        if self.indice_punto_actual >= len(self.trayectoria):
+                self.get_logger().info('Se alcanzó el final de la trayectoria')
+                # Detener el robot
+                self.velL = 0.0
+                self.velA = 0.0
+                return
+        
+        # Obtener las coordenadas del punto actual en la trayectoria
+        target_x, target_y = self.trayectoria[self.indice_punto_actual]
 
-        #Primer trazo
-        # if self.bandera == 0:
-        #     self.angulo = math.atan2(self.y1,self.x1)
-        #     self.velL = 0.0
-        #     self.velA = 0.1
-        #     if self.Postheta >= self.angulo:
-        #         self.velA = 0.0
-        #         self.velL = 0.1
-        #         self.bandera = 1
-            # else:
-            #     self.velL = 0.1
-            #     self.velA = 0.0
-            #     self.bandera = 1
-        self.velA = 0.0
-        self.velL = 0.1    
-        if self.Posx >= self.x1 and self.bandera == 1:
-            self.velL = 0.0
-            self.velA = 0.1
-            self.angulo = round(math.atan2((self.y2-self.y1),(self.x2-self.x1)),2)
-            if self.Postheta >= 1.5:
-                self.velA = 0.0
-                self.velL = 0.1
-                self.bandera = 2
-        #Segundo trazo
-        elif self.Posy >= self.y2 and self.bandera == 2:
-            self.velL = 0.0
-            self.velA = 0.1
-            self.angulo = round(math.atan2((self.y3-self.y2),(self.x3-self.x2)),2)
-            if self.Postheta >= self.angulo:  
-                self.velA = 0.0
-                self.velL = 0.1
-                self.bandera = 3
-        #Tercer trazo
-        elif self.Posx <= self.x3 and self.bandera == 3:
-            self.velL = 0.0
-            self.velA = 0.1
-            self.angulo = round(math.atan2((self.y4-self.y3),(self.x4-self.x3)),2)
-            if self.angulo < 0:
-                self.angulo = self.angulo + 6
-            if self.Postheta >= self.angulo:
-                self.velA = 0.0
-                self.velL = 0.1
-                self.bandera = 4
-        #Cuarto trazo
-        elif self.Posy <= self.y4 and self.bandera == 4:
-            self.velL = 0.0
-            self.velA = 0.0
-            # if self.Postheta >= 6.0:
-            #     self.velA = 0.0
-            #     self.velL = 0.0
+        # Calcular las coordenadas polares del punto objetivo
+        self.distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
+        self.angulo_objetivo = math.atan2(target_y - self.Posy, target_x - self.Posx)
+
+        if self.indice_punto_actual == 3:
+            temporal = 2*math.pi
 
         
-        self.twist_msg.linear.x = self.velL
-        self.twist_msg.angular.z = self.velA
-        tiempo_trayectoria = Float32()
-        tiempo_trayectoria.data = self.angulo
-        self.pub_cmd_vel.publish(self.twist_msg)
-        self.pub_time_path.publish(tiempo_trayectoria)
+        if self.angulo_objetivo +temporal >= self.Postheta+0.07:
+            self.velA = 0.1
+            self.velL = 0.0
+        elif self.distancia > 0.1:
+            self.velA = 0.0
+            self.velL = 0.1
+        else:
+            self.velA = 0.0
+            self.velL = 0.0
+            self.indice_punto_actual += 1
+        
+             # Imprimir el valor de indice_punto_actual cada vez que cambie
+
+        
+
+
+        
+        # Crear el mensaje Twist y publicarlo
+        twist_msg = Twist()
+        twist_msg.linear.x = self.velL
+        twist_msg.angular.z = self.velA
+        self.pub_cmd_vel.publish(twist_msg)
 
 
 def main(args=None):
