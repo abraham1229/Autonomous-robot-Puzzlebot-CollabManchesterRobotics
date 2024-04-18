@@ -50,6 +50,9 @@ class My_Talker_Params(Node):
         #Variable para obtener las velocidades del robot
         self.velLineal = 0.0
 
+        #Variable para detectar si se ha cambiado de signo
+        self.cambioSingo = 0
+
         
     #Lee los datos del nodo de la llanta izquierda
     def signal_callback1(self, msg):
@@ -64,6 +67,8 @@ class My_Talker_Params(Node):
     
     #Se hace callback en el que se calcula la posición en x,y y theha
     def timer_callback(self):
+
+
         #Publicar los parámetros obtenidos con ayuda de msg personalizado.
         msgDato = Vector()
 
@@ -72,7 +77,22 @@ class My_Talker_Params(Node):
         #Se calcula argumento velocidad
         self.velLineal = self.r*((self.velD+self.velI)/2)
 
-        self.theha += self.velocidadTheha*self.periodo_lectura
+        if self.cambioSingo == 0:
+            if self.theha >= 3:
+                self.theha = -1*self.velocidadTheha*self.periodo_lectura
+                self.cambioSingo = 1
+            else:
+                self.theha += self.velocidadTheha*self.periodo_lectura
+        
+        elif self.cambioSingo == 1:
+            if self.theha <= -3:
+                self.theha = -1*self.velocidadTheha*self.periodo_lectura
+                self.cambioSingo = 0
+            else:
+                self.theha -= self.velocidadTheha*self.periodo_lectura
+                
+
+
 
         self.posX += self.velLineal*math.cos(self.theha) *self.periodo_lectura
         self.posY += self.velLineal*math.sin(self.theha) *self.periodo_lectura
