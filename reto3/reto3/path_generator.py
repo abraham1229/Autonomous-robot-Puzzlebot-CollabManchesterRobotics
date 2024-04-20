@@ -28,9 +28,34 @@ class My_Talker_Params(Node):
         ri_type = self.get_parameter('type').get_parameter_value().integer_value
         self.msg.vel_lineal = self.get_parameter('velocidad_lineal').get_parameter_value().double_value
         self.msg.vel_angular = self.get_parameter('velocidad_angular').get_parameter_value().double_value
-
+        
         if ri_type == 0:
-            # Square condition
+            self.msg.x1 = 0.0
+            self.msg.y1 = 0.0
+            self.msg.x2 = 0.0
+            self.msg.y2 = 0.0
+            self.msg.x3 = 0.0
+            self.msg.y3 = 0.0
+            self.msg.x4 = 0.0
+            self.msg.y4 = 0.0
+
+        if ri_type == 1:
+            # Triángulo
+            self.msg.x1 = 0.5
+            self.msg.y1 = 0.87
+            self.msg.x2 = 1.0
+            self.msg.y2 = 0.0
+            self.msg.x3 = 0.0
+            self.msg.y3 = 0.0
+            self.msg.x4 = 0.0
+            self.msg.y4 = 0.0
+            self.msg.x5 = 0.0
+            self.msg.y5 = 0.0
+            self.msg.x6 = 0.0
+            self.msg.y6 = 0.0
+
+        if ri_type == 2:
+            # Cuadrado
             self.msg.x1 = 1.0
             self.msg.y1 = 0.0
             self.msg.x2 = 1.0
@@ -39,16 +64,41 @@ class My_Talker_Params(Node):
             self.msg.y3 = 1.0
             self.msg.x4 = 0.0
             self.msg.y4 = 0.0
-        
-        if ri_type == 1:
-            self.msg.x1 = 1.0
-            self.msg.y1 = 1.0
-            self.msg.x2 = 0.0
-            self.msg.y2 = 2.0
-            self.msg.x3 = 2.0
-            self.msg.y3 = 2.0
-            self.msg.x4 = 2.0
+            self.msg.x5 = 0.0
+            self.msg.y5 = 0.0
+            self.msg.x6 = 0.0
+            self.msg.y6 = 0.0
+
+        if ri_type == 3:
+            # Pentágono
+            self.msg.x1 = 0.81
+            self.msg.y1 = 0.59
+            self.msg.x2 = 1.0
+            self.msg.y2 = 0.0
+            self.msg.x3 = 0.19
+            self.msg.y3 = 0.59
+            self.msg.x4 = 0.0
             self.msg.y4 = 0.0
+            self.msg.x5 = 0.5
+            self.msg.y5 = 1.0
+            self.msg.x6 = 0.0
+            self.msg.y6 = 0.0
+
+        if ri_type == 4:
+            # Hexágono
+            self.msg.x1 = 0.87
+            self.msg.y1 = 0.5
+            self.msg.x2 = 1.0
+            self.msg.y2 = 0.25
+            self.msg.x3 = 0.87
+            self.msg.y3 = 0.0
+            self.msg.x4 = 0.13
+            self.msg.y4 = 0.0
+            self.msg.x5 = 0.0
+            self.msg.y5 = 0.25
+            self.msg.x6 = 0.13
+            self.msg.y6 = 0.5
+
         
 
         self.pub.publish(self.msg)

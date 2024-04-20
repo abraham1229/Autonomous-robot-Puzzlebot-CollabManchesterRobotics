@@ -28,7 +28,7 @@ class Odometry_Node(Node):
         #Se crea el publicador que mandará mensaje personalizado
         self.pub_odometry = self.create_publisher(Vector, 'odometria', 1000)
         # Período de temporizador para 10Hz
-        self.timer_period = 0.1 
+        self.timer_period = 0.01 
         #Se declara el timer que llamará al callback
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         #DECLARACIÓN DE VARIABLES

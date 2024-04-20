@@ -20,10 +20,16 @@ def generate_launch_description():
         output='screen'
     )
 
-    #Se corre el signal generator
     path_generator_node = Node(
         package='reto3',
         executable='path_generator',
+        output='screen',
+        parameters = [config]
+    )
+
+    controller_node = Node(
+        package='reto3',
+        executable='controller',
         output='screen',
         parameters = [config]
     )
@@ -44,5 +50,5 @@ def generate_launch_description():
     )
     
     
-    l_d = LaunchDescription([odometry_node,path_generator_node])
+    l_d = LaunchDescription([odometry_node,path_generator_node,controller_node])
     return l_d
