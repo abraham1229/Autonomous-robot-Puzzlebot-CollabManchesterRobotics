@@ -31,9 +31,6 @@ class Odometry_Node(Node):
         self.timer_period = 0.1 
         #Se declara el timer que llamará al callback
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
-        #Se despliega en pantalla que se ha inicializado el nodo
-        self.get_logger().info('Odometry node initialized')
-
         #DECLARACIÓN DE VARIABLES
 
         #Variables físicas del robot
@@ -60,6 +57,9 @@ class Odometry_Node(Node):
 
         #Se declara mensaje personalizado
         self.msgDato = Vector()
+
+        #Se despliega en pantalla que se ha inicializado el nodo
+        self.get_logger().info('Odometry node initialized')
 
         
     #Lee los datos del nodo de la llanta izquierda

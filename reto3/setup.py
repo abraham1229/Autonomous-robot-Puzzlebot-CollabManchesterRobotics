@@ -27,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'odometry = reto3.odometry:main'
+            'path_generator = reto3.path_generator:main'
         ],
     },
 )
