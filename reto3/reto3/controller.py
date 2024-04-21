@@ -51,7 +51,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         #Valores de k
-        self.kpTheta = 0.15
+        self.kpTheta = 0.1
         self.kiTheta = 0.0
         self.kdTheta = 0.0
         #Resultado operaciones
@@ -71,6 +71,9 @@ class Controller(Node):
         self.DLineal = 0.0
         #Control
         self.Ulineal = 0.0
+
+        #Num lados
+        self.numLados = 3
 
     # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
@@ -93,11 +96,15 @@ class Controller(Node):
             self.get_logger().warn('No hay puntos en la trayectoria')
             return
         
-        if self.indice_punto_actual >= len(self.trayectoria)-1:
+        if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numLados:
                 self.get_logger().info('Se alcanzó el final de la trayectoria')
                 # Detener el robot
                 self.velL = 0.0
                 self.velA = 0.0
+                twist_msg = Twist()
+                twist_msg.linear.x = self.velL
+                twist_msg.angular.z = self.velA
+                self.pub_cmd_vel.publish(twist_msg)
                 return
         
         # Obtener las coordenadas del punto actual en la trayectoria
@@ -136,12 +143,12 @@ class Controller(Node):
         self.velA = self.kpTheta*self.errorTheta
         self.velL = self.kpLineal*self.error_distancia
 
-        if self.velA > 0.05:
+        if self.errorTheta > 0.02 or self.errorTheta < -0.02:
             self.velL = 0.0
 
 
     
-        if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
+        if self.errorTheta < 0.1 and self.errorTheta > -0.1 and self.error_distancia < 0.1:
             self.indice_punto_actual += 1
 
         self.get_logger().info(f'-------------')

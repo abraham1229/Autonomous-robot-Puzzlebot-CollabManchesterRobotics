@@ -95,11 +95,11 @@ class Odometry_Node(Node):
 
         # Se hace cambio de signo del ángulo si es necesario.
         if self.theta >= math.pi:
-            self.theta -= 1.85 * math.pi
+            self.theta -= 2 * math.pi
         elif self.theta <= -math.pi:
-            self.theta += 1.85 * math.pi
-        else:
-            self.theta += self.velocidadTheta * self.timer_period
+            self.theta += 2 * math.pi
+        
+        self.theta += self.velocidadTheta * self.timer_period
         
                 
         #Se calcula posición en x y y
