@@ -11,7 +11,7 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
-        timer_period = 0.0
+        timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
@@ -44,9 +44,33 @@ class Controller(Node):
         # Velocidades lineal y angular del robot
         self.velL = 0.0
         self.velA = 0.0
-        self.distancia = 0.0
+        self.error_distancia = 0.0
         self.angulo_objetivo = 0.0
         self.errorTheta = 0.0
+
+        #Variables para el control
+        #Theta 
+        #Valores de k
+        self.kpTheta = 0.0
+        self.kiTheta = 0.0
+        self.kdTheta = 0.0
+        #Resultado operaciones
+        self.PTheta = 0.0
+        self.ITheta = 0.0
+        self.DTheta = 0.0
+        #Control
+        self.UTheta = 0.0
+        #Lineal
+        #Valores de k
+        self.kpLineal = 0.0
+        self.kiLineal = 0.0
+        self.kdLineal = 0.0
+        #Resultados operaciones
+        self.PLineal = 0.0
+        self.ILineal = 0.0
+        self.DLineal = 0.0
+        #Control
+        self.Ulineal = 0.0
 
     # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
@@ -84,21 +108,28 @@ class Controller(Node):
         
 
         # Calcular las coordenadas polares del punto objetivo
-        self.distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
-        self.angulo_objetivo = math.atan2(target_y-target_y_ant, target_x-target_x_ant)
+        #Se calcula el error lineal
+        self.error_distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
 
+        #Se calcula el error angular
+        self.angulo_objetivo = math.atan2(target_y-target_y_ant, target_x-target_x_ant)
         self.errorTheta = self.angulo_objetivo - self.Postheta
 
+        # Se deja en angulos de menos pi a pi
         if self.errorTheta >= math.pi:
             self.errorTheta -= 2 * math.pi
         elif self.errorTheta <= -math.pi:
             self.errorTheta += 2 * math.pi
-        
+
+        #Se aplica el control
+
+        self.UTheta = 0.0
+        self.Ulineal = 0.0
         if self.errorTheta < 0.1 and self.errorTheta > -0.1 :
             self.velA = 0.0
             self.velL = 0.0
 
-            if self.distancia > 0.1:
+            if self.error_distancia > 0.1:
                 self.velA = 0.0
                 self.velL = 0.1
             else:
@@ -113,9 +144,10 @@ class Controller(Node):
                 self.velA = -0.1
                 self.velL = 0.0
 
-        self.get_logger().info(f'------------------------------------------------------------')
-        self.get_logger().info(f'Error angular ({self.errorTheta})')
-        self.get_logger().info(f'Error lineal ({self.distancia}, {self.indice_punto_actual})')
+        self.get_logger().info(f'-------------')
+        self.get_logger().info(f'Angular ({self.errorTheta})')
+        self.get_logger().info(f'Lineal ({self.error_distancia})')
+        self.get_logger().info(f'Punto ({self.indice_punto_actual})')
 
 
 
