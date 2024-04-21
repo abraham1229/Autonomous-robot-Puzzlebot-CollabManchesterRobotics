@@ -153,7 +153,7 @@ class Controller(Node):
         self.velA = self.kpTheta*self.errorTheta
         self.velL = self.kpLineal*self.error_distancia
 
-        if self.errorTheta > 0.02 or self.errorTheta < -0.02:
+        if self.errorTheta > 0.03 or self.errorTheta < -0.03:
             self.velL = 0.0
 
 
@@ -162,8 +162,8 @@ class Controller(Node):
             self.indice_punto_actual += 1
 
         self.get_logger().info(f'-------------')
-        self.get_logger().info(f'Angular ({self.velA}),({self.errorTheta})')
-        self.get_logger().info(f'Lineal ({self.velL}),({self.error_distancia})')
+        self.get_logger().info(f'Angular ({self.errorTheta})')
+        self.get_logger().info(f'Lineal ({self.error_distancia})')
         self.get_logger().info(f'Punto ({self.indice_punto_actual})')
 
 
