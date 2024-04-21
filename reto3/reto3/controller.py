@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32,Int32
 from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
@@ -11,6 +11,7 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
+        self.pub_type = self.create_publisher(Int32, 'path_type', 1000)
         self.timer_period = 0.1
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
@@ -74,6 +75,10 @@ class Controller(Node):
 
         #Num lados
         self.numLados = 3
+        self.msgType = Int32()
+        self.type = 1
+
+
 
     # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
@@ -97,7 +102,7 @@ class Controller(Node):
             return
         
         if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numLados:
-                self.get_logger().info('Se alcanzó el final de la trayectoria')
+                self.get_logger().info(f'Type ({self.type})')
                 # Detener el robot
                 self.velL = 0.0
                 self.velA = 0.0
@@ -105,6 +110,11 @@ class Controller(Node):
                 twist_msg.linear.x = self.velL
                 twist_msg.angular.z = self.velA
                 self.pub_cmd_vel.publish(twist_msg)
+                self.type += 1
+                self.msgType.data = self.type
+                self.pub_type.publish(self.msgType)
+                self.numLados += 1
+                self.indice_punto_actual = 0
                 return
         
         # Obtener las coordenadas del punto actual en la trayectoria

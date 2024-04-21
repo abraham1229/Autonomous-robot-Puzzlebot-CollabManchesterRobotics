@@ -10,5 +10,3 @@ float64 x5
 float64 y5
 float64 x6
 float64 y6
-float64 vel_lineal
-float64 vel_angular

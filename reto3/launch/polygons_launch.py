@@ -23,8 +23,7 @@ def generate_launch_description():
     path_generator_node = Node(
         package='reto3',
         executable='path_generator',
-        output='screen',
-        parameters = [config]
+        output='screen'
     )
 
     controller_node = Node(

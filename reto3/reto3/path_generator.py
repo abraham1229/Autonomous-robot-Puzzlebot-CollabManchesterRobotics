@@ -1,20 +1,18 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Int32
 from msgs_clase.msg import Path   # type: ignore
 
 class My_Talker_Params(Node):
     def __init__(self):
         super().__init__('Path_generator')
-        
-        # Declare parameters
-        self.declare_parameters(
-            namespace='',
-            parameters=[
-                ('type', rclpy.Parameter.Type.INTEGER),
-                ('velocidad_lineal', rclpy.Parameter.Type.DOUBLE),
-                ('velocidad_angular', rclpy.Parameter.Type.DOUBLE),
-            ])
+                
+        #Se hacen las suscripciones pertinentes
+        self.subscription_odometria = self.create_subscription(
+            Int32,
+            'path_type',
+            self.signal_callback_type,
+            1000) #Se debe de incluir la lectura de datos
         
         self.pub = self.create_publisher(Path, 'path_generator', 1000)
         timer_period = 0.1
@@ -23,13 +21,15 @@ class My_Talker_Params(Node):
         self.msg = Path()
         self.velocidaLineal = 0.0
         self.velocidaAngular = 0.0
+        self.type  = 1
+
+    # Callback para recibir la posición actual del robot
+    def signal_callback_type(self, msg):
+        if msg is not None:
+            self.type = msg.data
 
     def timer_callback(self):
-        ri_type = self.get_parameter('type').get_parameter_value().integer_value
-        self.msg.vel_lineal = self.get_parameter('velocidad_lineal').get_parameter_value().double_value
-        self.msg.vel_angular = self.get_parameter('velocidad_angular').get_parameter_value().double_value
-        
-        if ri_type == 0:
+        if self.type == 0:
             self.msg.x1 = 0.0
             self.msg.y1 = 0.0
             self.msg.x2 = 0.0
@@ -39,7 +39,7 @@ class My_Talker_Params(Node):
             self.msg.x4 = 0.0
             self.msg.y4 = 0.0
 
-        if ri_type == 1:
+        if self.type == 1:
             # Triángulo
             self.msg.x1 = 0.5
             self.msg.y1 = 0.87
@@ -54,7 +54,7 @@ class My_Talker_Params(Node):
             self.msg.x6 = 0.0
             self.msg.y6 = 0.0
 
-        if ri_type == 2:
+        if self.type == 2:
             # Cuadrado
             self.msg.x1 = 1.0
             self.msg.y1 = 0.0
@@ -69,7 +69,7 @@ class My_Talker_Params(Node):
             self.msg.x6 = 0.0
             self.msg.y6 = 0.0
 
-        if ri_type == 3:
+        if self.type == 3:
             # Pentágono
             self.msg.x1 = 0.81
             self.msg.y1 = 0.59
@@ -84,7 +84,7 @@ class My_Talker_Params(Node):
             self.msg.x6 = 0.0
             self.msg.y6 = 0.0
 
-        if ri_type == 4:
+        if self.type == 4:
             # Hexágono
             self.msg.x1 = 0.87
             self.msg.y1 = 0.5
