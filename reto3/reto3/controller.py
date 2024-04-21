@@ -46,6 +46,7 @@ class Controller(Node):
         self.velA = 0.0
         self.distancia = 0.0
         self.angulo_objetivo = 0.0
+        self.errorTheta = 0.0
 
     # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
@@ -57,7 +58,7 @@ class Controller(Node):
     # Callback para recibir los puntos de la trayectoria
     def signal_callback2(self, msg):
         if msg is not None:
-            self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4)]
+            self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4), (msg.x5, msg.y5), (msg.x6, msg.y6)]
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
@@ -86,9 +87,9 @@ class Controller(Node):
         self.distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
         self.angulo_objetivo = math.atan2(target_y - target_y_ant, target_x - target_x_ant)
 
-
+        self.errorTheta = self.angulo_objetivo - self.Postheta
         
-        if self.angulo_objetivo < self.Postheta+0.15 and self.angulo_objetivo > self.Postheta-0.15:
+        if self.angulo_objetivo < self.Postheta+0.1 and self.angulo_objetivo > self.Postheta-0.1:
             self.velA = 0.0
             self.velL = 0.0
 
@@ -99,6 +100,7 @@ class Controller(Node):
 
                 self.indice_punto_actual += 1
         else:
+            
             self.velA = 0.1
             self.velL = 0.0
 

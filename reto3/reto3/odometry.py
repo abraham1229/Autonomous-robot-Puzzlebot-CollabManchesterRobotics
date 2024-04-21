@@ -51,9 +51,6 @@ class Odometry_Node(Node):
         self.theta = 0.0
         self.posX = 0.0
         self.posY = 0.0
-        
-        #Bandera cambio de signo de thetha
-        self.cambioSingo = 0
 
         #Se declara mensaje personalizado
         self.msgDato = Vector()
@@ -80,21 +77,30 @@ class Odometry_Node(Node):
         self.velocidadTheta = self.radius*((self.vel_right-self.vel_left)/self.lenght)
         #Se calcula argumento velocidad
         self.velLineal = self.radius*((self.vel_right+self.vel_left)/2)
-
-        #Se hace cambio de signo del ángulo si es necesario.
-        if self.cambioSingo == 0:
-            if self.theta >= 3.14:
-                self.theta = -3.14
-                self.cambioSingo = 1
-            else:
-                self.theta += self.velocidadTheta*self.timer_period
         
-        elif self.cambioSingo == 1:
-            if self.theta >= -0.5:
-                self.theta = 0.0
-                self.cambioSingo = 0
-            else:
-                self.theta += self.velocidadTheta*self.timer_period
+        # #Se hace cambio de signo del ángulo si es necesario.
+        # if self.cambioSingo == 0:
+        #     if self.theta >= 3.14:
+        #         self.theta = -3.14
+        #         self.cambioSingo = 1
+        #     else:
+        #         self.theta += self.velocidadTheta*self.timer_period
+        
+        # elif self.cambioSingo == 1:
+        #     if self.theta >= -0.5:
+        #         self.theta = 0.0
+        #         self.cambioSingo = 0
+        #     else:
+        #         self.theta += self.velocidadTheta*self.timer_period
+
+        # Se hace cambio de signo del ángulo si es necesario.
+        if self.theta >= math.pi:
+            self.theta -= 1.85 * math.pi
+        elif self.theta <= -math.pi:
+            self.theta += 1.85 * math.pi
+        else:
+            self.theta += self.velocidadTheta * self.timer_period
+        
                 
         #Se calcula posición en x y y
         self.posX += self.velLineal*math.cos(self.theta) *self.timer_period
