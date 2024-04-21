@@ -11,8 +11,8 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
-        timer_period = 0.1
-        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.timer_period = 0.1
+        self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
 
@@ -51,7 +51,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         #Valores de k
-        self.kpTheta = 0.0
+        self.kpTheta = 0.15
         self.kiTheta = 0.0
         self.kdTheta = 0.0
         #Resultado operaciones
@@ -62,7 +62,7 @@ class Controller(Node):
         self.UTheta = 0.0
         #Lineal
         #Valores de k
-        self.kpLineal = 0.0
+        self.kpLineal = 0.2
         self.kiLineal = 0.0
         self.kdLineal = 0.0
         #Resultados operaciones
@@ -123,35 +123,32 @@ class Controller(Node):
 
         #Se aplica el control
 
-        self.UTheta = 0.0
-        self.Ulineal = 0.0
-        if self.errorTheta < 0.1 and self.errorTheta > -0.1 :
-            self.velA = 0.0
-            self.velL = 0.0
+        #Angular
+        self.PTheta = self.kpTheta*self.errorTheta
 
-            if self.error_distancia > 0.1:
-                self.velA = 0.0
-                self.velL = 0.1
-            else:
+        self.ITheta += self.timer_period*self.kiTheta*self.errorTheta
 
-                self.indice_punto_actual += 1
+        self.DTheta = self.kdTheta/self.timer_period*self.errorTheta
 
-        else:
-            if self.errorTheta > 0:
-                self.velA = 0.1
-                self.velL = 0.0
-            else:
-                self.velA = -0.1
-                self.velL = 0.0
-
-        self.get_logger().info(f'-------------')
-        self.get_logger().info(f'Angular ({self.errorTheta})')
-        self.get_logger().info(f'Lineal ({self.error_distancia})')
-        self.get_logger().info(f'Punto ({self.indice_punto_actual})')
-
-
+        self.Ulineal = self.PTheta + self.ITheta + self.DTheta
 
         
+        self.velA = self.kpTheta*self.errorTheta
+        self.velL = self.kpLineal*self.error_distancia
+
+        if self.velA > 0.05:
+            self.velL = 0.0
+
+
+    
+        if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
+            self.indice_punto_actual += 1
+
+        self.get_logger().info(f'-------------')
+        self.get_logger().info(f'Angular ({self.velA}),({self.errorTheta})')
+        self.get_logger().info(f'Lineal ({self.velL}),({self.error_distancia})')
+        self.get_logger().info(f'Punto ({self.indice_punto_actual})')
+
 
 
         
