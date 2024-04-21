@@ -114,8 +114,8 @@ class Controller(Node):
                 self.velL = 0.0
 
         self.get_logger().info(f'------------------------------------------------------------')
-        self.get_logger().info(f'Angulars meta y odo ({self.errorTheta})')
-        self.get_logger().info(f'Distancias y punto ({self.distancia}, {self.indice_punto_actual})')
+        self.get_logger().info(f'Error angular ({self.errorTheta})')
+        self.get_logger().info(f'Error lineal ({self.distancia}, {self.indice_punto_actual})')
 
 
 
