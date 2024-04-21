@@ -85,11 +85,16 @@ class Controller(Node):
 
         # Calcular las coordenadas polares del punto objetivo
         self.distancia = math.sqrt((target_x - self.Posx)**2 + (target_y - self.Posy)**2)
-        self.angulo_objetivo = math.atan2(target_y - target_y_ant, target_x - target_x_ant)
+        self.angulo_objetivo = math.atan2(target_y-target_y_ant, target_x-target_x_ant)
 
         self.errorTheta = self.angulo_objetivo - self.Postheta
+
+        if self.errorTheta >= math.pi:
+            self.errorTheta -= 2 * math.pi
+        elif self.errorTheta <= -math.pi:
+            self.errorTheta += 2 * math.pi
         
-        if self.angulo_objetivo < self.Postheta+0.1 and self.angulo_objetivo > self.Postheta-0.1:
+        if self.errorTheta < 0.1 and self.errorTheta > -0.1 :
             self.velA = 0.0
             self.velL = 0.0
 
@@ -99,13 +104,17 @@ class Controller(Node):
             else:
 
                 self.indice_punto_actual += 1
+
         else:
-            
-            self.velA = 0.1
-            self.velL = 0.0
+            if self.errorTheta > 0:
+                self.velA = 0.1
+                self.velL = 0.0
+            else:
+                self.velA = -0.1
+                self.velL = 0.0
 
         self.get_logger().info(f'------------------------------------------------------------')
-        self.get_logger().info(f'Angulars meta y odo ({self.angulo_objetivo}, {self.Postheta})')
+        self.get_logger().info(f'Angulars meta y odo ({self.errorTheta})')
         self.get_logger().info(f'Distancias y punto ({self.distancia}, {self.indice_punto_actual})')
 
 
