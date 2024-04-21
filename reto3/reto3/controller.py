@@ -11,7 +11,7 @@ class Controller(Node):
         super().__init__('Controller')
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
-        timer_period = 0.1
+        timer_period = 0.0
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
         self.msg = Vector()
