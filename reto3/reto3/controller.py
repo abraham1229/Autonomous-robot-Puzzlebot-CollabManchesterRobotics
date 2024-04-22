@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32,Int32
-from msgs_clase.msg import Vector, Path   # type: ignore
+from msgs_clase.msg import Vector, Path, Error   # type: ignore
 from geometry_msgs.msg import Twist
 import math
 
@@ -12,6 +12,7 @@ class Controller(Node):
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
         self.pub_type = self.create_publisher(Int32, 'path_type', 1000)
+        self.pub_error = self.create_publisher(Error, 'error_punto', 1000)
         self.timer_period = 0.1
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
@@ -153,11 +154,11 @@ class Controller(Node):
         self.velA = self.kpTheta*self.errorTheta
         self.velL = self.kpLineal*self.error_distancia
 
-        if self.velA < 2:
-            self.velA = 2
+        if self.velA > 0.2:
+            self.velA = 0.2
 
-        if self.velL < 2:
-            self.velL = 2
+        if self.velL > 0.2:
+            self.velL = 0.2
 
         if self.errorTheta > 0.03 or self.errorTheta < -0.03:
             self.velL = 0.0
@@ -180,6 +181,12 @@ class Controller(Node):
         twist_msg.linear.x = self.velL
         twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(twist_msg)
+
+        # Crear el mensaje Error y publicarlo
+        error_msg = Error()
+        error_msg.err_theta = self.errorTheta
+        error_msg.err_lineal = self.error_distancia
+        self.pub_error.publish(error_msg)
 
 
 def main(args=None):

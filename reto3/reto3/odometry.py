@@ -76,7 +76,7 @@ class Odometry_Node(Node):
         #Se calcula theta punto
         self.velocidadTheta = self.radius*((self.vel_right-self.vel_left)/self.lenght)
         #Se calcula argumento velocidad
-        self.velLineal = self.radius*((self.vel_right+self.vel_left)/2)
+        self.velLineal = self.radius*((self.vel_right+self.vel_left)/2) * 1.09
         
         # Se hace cambio de signo del ángulo si es necesario.
         if self.theta >= math.pi:

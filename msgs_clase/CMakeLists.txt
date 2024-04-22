@@ -17,6 +17,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Sphere.msg"
   "msg/Vector.msg"
   "msg/Path.msg"
+  "msg/Error.msg"
   DEPENDENCIES geometry_msgs
 )
 
