@@ -53,7 +53,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         #Valores de k
-        self.kpTheta = 0.3
+        self.kpTheta = 0.25
         self.kiTheta = 0.0
         self.kdTheta = 0.0
         #Resultado operaciones
@@ -165,7 +165,7 @@ class Controller(Node):
 
 
     
-        if self.errorTheta < 0.1 and self.errorTheta > -0.1 and self.error_distancia < 0.1:
+        if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
             self.indice_punto_actual += 1
 
         self.get_logger().info(f'-------------')
