@@ -52,7 +52,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         #Valores de k
-        self.kpTheta = 0.1
+        self.kpTheta = 0.3
         self.kiTheta = 0.0
         self.kdTheta = 0.0
         #Resultado operaciones
@@ -63,7 +63,7 @@ class Controller(Node):
         self.UTheta = 0.0
         #Lineal
         #Valores de k
-        self.kpLineal = 0.2
+        self.kpLineal = 0.4
         self.kiLineal = 0.0
         self.kdLineal = 0.0
         #Resultados operaciones
@@ -153,6 +153,12 @@ class Controller(Node):
         self.velA = self.kpTheta*self.errorTheta
         self.velL = self.kpLineal*self.error_distancia
 
+        if self.velA < 2:
+            self.velA = 2
+
+        if self.velL < 2:
+            self.velL = 2
+
         if self.errorTheta > 0.03 or self.errorTheta < -0.03:
             self.velL = 0.0
 
@@ -162,8 +168,8 @@ class Controller(Node):
             self.indice_punto_actual += 1
 
         self.get_logger().info(f'-------------')
-        self.get_logger().info(f'Angular ({self.errorTheta})')
-        self.get_logger().info(f'Lineal ({self.error_distancia})')
+        self.get_logger().info(f'Angular ({self.velA})')
+        self.get_logger().info(f'Lineal ({self.velL})')
         self.get_logger().info(f'Punto ({self.indice_punto_actual})')
 
 

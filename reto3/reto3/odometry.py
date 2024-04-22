@@ -78,28 +78,13 @@ class Odometry_Node(Node):
         #Se calcula argumento velocidad
         self.velLineal = self.radius*((self.vel_right+self.vel_left)/2)
         
-        # #Se hace cambio de signo del ángulo si es necesario.
-        # if self.cambioSingo == 0:
-        #     if self.theta >= 3.14:
-        #         self.theta = -3.14
-        #         self.cambioSingo = 1
-        #     else:
-        #         self.theta += self.velocidadTheta*self.timer_period
-        
-        # elif self.cambioSingo == 1:
-        #     if self.theta >= -0.5:
-        #         self.theta = 0.0
-        #         self.cambioSingo = 0
-        #     else:
-        #         self.theta += self.velocidadTheta*self.timer_period
-
         # Se hace cambio de signo del ángulo si es necesario.
         if self.theta >= math.pi:
             self.theta -= 2 * math.pi
         elif self.theta <= -math.pi:
             self.theta += 2 * math.pi
         
-        self.theta += self.velocidadTheta * self.timer_period
+        self.theta += self.velocidadTheta * self.timer_period * 1.069
         
                 
         #Se calcula posición en x y y
