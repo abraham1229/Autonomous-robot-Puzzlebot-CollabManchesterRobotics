@@ -29,16 +29,6 @@ class My_Talker_Params(Node):
             self.type = msg.data
 
     def timer_callback(self):
-        if self.type == 0:
-            self.msg.x1 = 0.0
-            self.msg.y1 = 0.0
-            self.msg.x2 = 0.0
-            self.msg.y2 = 0.0
-            self.msg.x3 = 0.0
-            self.msg.y3 = 0.0
-            self.msg.x4 = 0.0
-            self.msg.y4 = 0.0
-
         if self.type == 1:
             # Triángulo
             self.msg.x1 = 0.5
@@ -53,6 +43,10 @@ class My_Talker_Params(Node):
             self.msg.y5 = 0.0
             self.msg.x6 = 0.0
             self.msg.y6 = 0.0
+            self.msg.x7 = 0.0
+            self.msg.y7 = 0.0
+            self.msg.x8 = 0.0
+            self.msg.y8 = 0.0
 
         if self.type == 2:
             # Cuadrado
@@ -68,6 +62,10 @@ class My_Talker_Params(Node):
             self.msg.y5 = 0.0
             self.msg.x6 = 0.0
             self.msg.y6 = 0.0
+            self.msg.x7 = 0.0
+            self.msg.y7 = 0.0
+            self.msg.x8 = 0.0
+            self.msg.y8 = 0.0
 
         if self.type == 3:
             # Pentágono
@@ -81,8 +79,13 @@ class My_Talker_Params(Node):
             self.msg.y4 = 0.98
             self.msg.x5 = 0.0
             self.msg.y5 = 0.5
-            self.msg.x6 = 0.0
-            self.msg.y6 = 0.0
+            self.msg.x6 = 0.35
+            self.msg.y6 = 0.02
+            self.msg.x7 = 0.0
+            self.msg.y7 = 0.0
+            self.msg.x8 = 0.0
+            self.msg.y8 = 0.0
+            
 
         if self.type == 4:
             # Hexágono
@@ -98,6 +101,10 @@ class My_Talker_Params(Node):
             self.msg.y5 = 0.93
             self.msg.x6 = 0.0
             self.msg.y6 = 0.05
+            self.msg.x7 = 0.25
+            self.msg.y7 = 0.07
+            self.msg.x8 = 0.0
+            self.msg.y8 = 0.0
 
         
 

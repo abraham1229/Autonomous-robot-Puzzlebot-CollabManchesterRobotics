@@ -10,3 +10,7 @@ float64 x5
 float64 y5
 float64 x6
 float64 y6
+float64 x7
+float64 y7
+float64 x8
+float64 y8

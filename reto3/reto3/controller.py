@@ -75,7 +75,7 @@ class Controller(Node):
         self.Ulineal = 0.0
 
         #Num lados
-        self.numLados = 3
+        self.numPuntos = 4
         self.msgType = Int32()
         self.type = 1
 
@@ -91,7 +91,7 @@ class Controller(Node):
     # Callback para recibir los puntos de la trayectoria
     def signal_callback2(self, msg):
         if msg is not None:
-            self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4), (msg.x5, msg.y5), (msg.x6, msg.y6)]
+            self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4), (msg.x5, msg.y5), (msg.x6, msg.y6),(msg.x7, msg.y7),(msg.x8, msg.y8)]
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
@@ -102,7 +102,7 @@ class Controller(Node):
             self.get_logger().warn('No hay puntos en la trayectoria')
             return
         
-        if self.numLados >= 7:
+        if self.numPuntos >= 8:
                 self.get_logger().info(f'Trayectoria alcanzada')
                 # Detener el robot
                 self.velL = 0.0
@@ -114,7 +114,7 @@ class Controller(Node):
                 return
 
 
-        if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numLados:
+        if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numPuntos:
                 self.get_logger().info(f'Type ({self.type})')
                 # Detener el robot
                 self.velL = 0.0
@@ -126,7 +126,7 @@ class Controller(Node):
                 self.type += 1
                 self.msgType.data = self.type
                 self.pub_type.publish(self.msgType)
-                self.numLados += 1
+                self.numPuntos += 1
                 self.indice_punto_actual = 0
                 return
         
