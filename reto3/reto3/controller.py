@@ -155,7 +155,7 @@ class Controller(Node):
         self.velL = self.kpLineal*self.error_distancia
 
         if self.velA > 0.2:
-            self.velA = 0.2
+            self.velA = 0.15
 
         if self.velL > 0.2:
             self.velL = 0.2

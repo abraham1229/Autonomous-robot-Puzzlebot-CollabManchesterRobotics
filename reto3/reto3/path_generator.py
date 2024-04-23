@@ -72,13 +72,13 @@ class My_Talker_Params(Node):
         if self.type == 3:
             # Pentágono
             self.msg.x1 = 0.35
-            self.msg.y1 = 0.98
+            self.msg.y1 = 0.02
             self.msg.x2 = 0.9
-            self.msg.y2 = 0.79
+            self.msg.y2 = 0.21
             self.msg.x3 = 0.9
-            self.msg.y3 = 0.21
+            self.msg.y3 = 0.59
             self.msg.x4 = 0.35
-            self.msg.y4 = 0.02
+            self.msg.y4 = 0.98
             self.msg.x5 = 0.0
             self.msg.y5 = 0.5
             self.msg.x6 = 0.0
@@ -87,17 +87,17 @@ class My_Talker_Params(Node):
         if self.type == 4:
             # Hexágono
             self.msg.x1 = 0.25
-            self.msg.y1 = 0.93
+            self.msg.y1 = 0.07
             self.msg.x2 = 0.75
-            self.msg.y2 = 0.93
+            self.msg.y2 = 0.07
             self.msg.x3 = 1.0
             self.msg.y3 = 0.5
             self.msg.x4 = 0.75
-            self.msg.y4 = 0.07
+            self.msg.y4 = 0.93
             self.msg.x5 = 0.25
-            self.msg.y5 = 0.07
+            self.msg.y5 = 0.93
             self.msg.x6 = 0.0
-            self.msg.y6 = 0.5
+            self.msg.y6 = 0.05
 
         
 
