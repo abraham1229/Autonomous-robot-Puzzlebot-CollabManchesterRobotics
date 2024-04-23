@@ -81,8 +81,8 @@ class My_Talker_Params(Node):
             self.msg.y4 = 0.98
             self.msg.x5 = 0.0
             self.msg.y5 = 0.5
-            self.msg.x6 = 0.0
-            self.msg.y6 = 0.0
+            self.msg.x6 = 0.35
+            self.msg.y6 = 0.02
 
         if self.type == 4:
             # Hexágono

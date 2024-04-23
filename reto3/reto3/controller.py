@@ -102,6 +102,18 @@ class Controller(Node):
             self.get_logger().warn('No hay puntos en la trayectoria')
             return
         
+        if self.numLados >= 7:
+                self.get_logger().info(f'Trayectoria alcanzada')
+                # Detener el robot
+                self.velL = 0.0
+                self.velA = 0.0
+                twist_msg = Twist()
+                twist_msg.linear.x = self.velL
+                twist_msg.angular.z = self.velA
+                self.pub_cmd_vel.publish(twist_msg)
+                return
+
+
         if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numLados:
                 self.get_logger().info(f'Type ({self.type})')
                 # Detener el robot
