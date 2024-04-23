@@ -64,7 +64,7 @@ class Controller(Node):
         self.UTheta = 0.0
         #Lineal
         #Valores de k
-        self.kpLineal = 0.4
+        self.kpLineal = 0.3
         self.kiLineal = 0.0
         self.kdLineal = 0.0
         #Resultados operaciones
