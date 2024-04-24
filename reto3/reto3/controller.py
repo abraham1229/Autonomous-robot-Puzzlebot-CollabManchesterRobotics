@@ -53,7 +53,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         #Valores de k
-        self.kpTheta = 0.25
+        self.kpTheta = 0.2
         self.kiTheta = 0.0
         self.kdTheta = 0.0
         #Resultado operaciones
@@ -154,13 +154,13 @@ class Controller(Node):
         self.velA = self.kpTheta*self.errorTheta
         self.velL = self.kpLineal*self.error_distancia
 
-        if self.velA > 0.2:
+        if self.velA > 0.15:
             self.velA = 0.15
 
-        if self.velL > 0.2:
-            self.velL = 0.2
+        if self.velL > 0.15:
+            self.velL = 0.15
 
-        if self.errorTheta > 0.03 or self.errorTheta < -0.03:
+        if self.errorTheta > 0.05 or self.errorTheta < -0.05:
             self.velL = 0.0
 
 
