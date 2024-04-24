@@ -84,7 +84,8 @@ class Odometry_Node(Node):
         elif self.theta <= -math.pi:
             self.theta += 2 * math.pi
         
-        self.theta += self.velocidadTheta * self.timer_period * 1.069
+        # self.theta += self.velocidadTheta * self.timer_period * 1.069
+        self.theta += self.velocidadTheta * self.timer_period * 1.1722
         
                 
         #Se calcula posición en x y y
