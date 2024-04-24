@@ -169,10 +169,10 @@ class Controller(Node):
         if self.velA > 0.15:
             self.velA = 0.15
 
-        if self.velL > 0.2:
-            self.velL = 0.2
+        if self.velL > 0.15:
+            self.velL = 0.15
 
-        if self.errorTheta > 0.03 or self.errorTheta < -0.03:
+        if self.errorTheta > 0.05 or self.errorTheta < -0.05:
             self.velL = 0.0
 
 
