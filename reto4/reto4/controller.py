@@ -156,11 +156,11 @@ class Controller(Node):
             self.velA = 0.15
 
 
-        if self.color_traffic_light == 0 or self.color_traffic_light == 1:
+        if  self.color_traffic_light == 1:
             self.velL = 0.2
         elif self.color_traffic_light == 2:
             self.velL = 0.1
-        elif self.color_traffic_light == 3:
+        elif self.color_traffic_light == 3 or self.color_traffic_light == 0 :
             self.velL = 0.0
 
 
