@@ -25,7 +25,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'odometry = reto4.odometry:main'
+            'odometry = reto4.odometry:main',
+            'controller = reto4.controller:main',
+            'path_generator = reto4.path_generator:main',
         ],
     },
 )
