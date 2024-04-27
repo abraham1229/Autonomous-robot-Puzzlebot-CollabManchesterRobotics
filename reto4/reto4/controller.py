@@ -56,6 +56,10 @@ class Controller(Node):
         self.angulo_objetivo = 0.0
         self.errorTheta = 0.0
 
+        #Variables para el control
+        #Theta 
+        self.kpTheta = 0.2
+
         #Num lados
         self.numPuntos = 5
         self.msgType = Int32()
@@ -63,6 +67,9 @@ class Controller(Node):
 
 
         self.color_traffic_light = 0
+
+        self.msgType.data = self.type
+        self.pub_type.publish(self.msgType)
 
 
 
@@ -143,29 +150,27 @@ class Controller(Node):
 
         #Se aplican condiciones respecto al semaforoo
 
-        
-        self.velA = 0.2
-        self.velL = 0.2
+        self.velA = self.kpTheta*self.errorTheta
+
+        if self.velA > 0.15:
+            self.velA = 0.15
+
 
         if self.color_traffic_light == 0 or self.color_traffic_light == 1:
-            self.velA = 0.2
             self.velL = 0.2
         elif self.color_traffic_light == 2:
-            self.velA = 0.1
             self.velL = 0.1
         elif self.color_traffic_light == 3:
-            self.velA = 0.0
             self.velL = 0.0
 
 
         if self.errorTheta > 0.05 or self.errorTheta < -0.05:
             self.velL = 0.0
+                
 
         if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
             self.indice_punto_actual += 1
 
-        # self.get_logger().info(f'-------------')
-        # self.get_logger().info(f'Angular ({self.velA})')
         # self.get_logger().info(f'Lineal ({self.velL})')
         self.get_logger().info(f'Color ({self.color_traffic_light})')
 
