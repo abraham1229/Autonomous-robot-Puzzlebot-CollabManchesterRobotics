@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32,Int32
-from msgs_clase.msg import Vector, Path, Error   # type: ignore
+from std_msgs.msg import Int32
+from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
 
@@ -12,7 +12,6 @@ class Controller(Node):
         
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
         self.pub_type = self.create_publisher(Int32, 'path_type', 1000)
-        self.pub_error = self.create_publisher(Error, 'error_punto', 1000)
         self.timer_period = 0.1
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.get_logger().info('Controller node initialized')
@@ -30,6 +29,13 @@ class Controller(Node):
             Path,
             'path_generator',
             self.signal_callback2,
+            rclpy.qos.qos_profile_sensor_data )
+        
+        #Se hacen las suscripciones pertinentes
+        self.subscription_light = self.create_subscription(
+            Int32,
+            'traffic_status',
+            self.signal_callback_traffic,
             rclpy.qos.qos_profile_sensor_data )
 
         # Variables para almacenar la posición actual del robot
@@ -80,6 +86,9 @@ class Controller(Node):
         self.type = 1
 
 
+        self.color_traffic_light = 0
+
+
 
     # Callback para recibir la posición actual del robot
     def signal_callback1(self, msg):
@@ -92,6 +101,11 @@ class Controller(Node):
     def signal_callback2(self, msg):
         if msg is not None:
             self.trayectoria = [(0,0),(msg.x1, msg.y1), (msg.x2, msg.y2), (msg.x3, msg.y3), (msg.x4, msg.y4), (msg.x5, msg.y5), (msg.x6, msg.y6),(msg.x7, msg.y7),(msg.x8, msg.y8)]
+
+     # Callback para recibir los puntos de la trayectoria
+    def signal_callback_traffic(self, msg):
+        if msg is not None:
+            self.color_traffic_light = msg.data
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
@@ -151,32 +165,26 @@ class Controller(Node):
         elif self.errorTheta <= -math.pi:
             self.errorTheta += 2 * math.pi
 
-        #Se aplica el control
-
-        #Angular
-        self.PTheta = self.kpTheta*self.errorTheta
-
-        self.ITheta += self.timer_period*self.kiTheta*self.errorTheta
-
-        self.DTheta = self.kdTheta/self.timer_period*self.errorTheta
-
-        self.Ulineal = self.PTheta + self.ITheta + self.DTheta
+        #Se aplican condiciones respecto al semaforoo
 
         
-        self.velA = self.kpTheta*self.errorTheta
-        self.velL = self.kpLineal*self.error_distancia
+        self.velA = 0.2
+        self.velL = 0.2
 
-        if self.velA > 0.15:
-            self.velA = 0.15
+        if self.color_traffic_light == 0 or self.color_traffic_light == 1:
+            self.velA = 0.2
+            self.velL = 0.2
+        elif self.color_traffic_light == 2:
+            self.velA = 0.1
+            self.velL = 0.1
+        elif self.color_traffic_light == 3:
+            self.velA = 0.0
+            self.velL = 0.0
 
-        if self.velL > 0.15:
-            self.velL = 0.15
 
         if self.errorTheta > 0.05 or self.errorTheta < -0.05:
             self.velL = 0.0
 
-
-    
         if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
             self.indice_punto_actual += 1
 
@@ -185,8 +193,6 @@ class Controller(Node):
         # self.get_logger().info(f'Lineal ({self.velL})')
         # self.get_logger().info(f'Punto ({self.indice_punto_actual})')
 
-
-
         
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
@@ -194,11 +200,6 @@ class Controller(Node):
         twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(twist_msg)
 
-        # Crear el mensaje Error y publicarlo
-        error_msg = Error()
-        error_msg.err_theta = self.errorTheta
-        error_msg.err_lineal = self.error_distancia
-        self.pub_error.publish(error_msg)
 
 
 def main(args=None):
