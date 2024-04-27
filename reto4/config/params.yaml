@@ -1,5 +1,3 @@
-Path_generator:
+Color_detection:
   ros__parameters:
-    type: 1
-    velocidad_lineal: 0.1
-    velocidad_angular: 0.1
+    color: 1

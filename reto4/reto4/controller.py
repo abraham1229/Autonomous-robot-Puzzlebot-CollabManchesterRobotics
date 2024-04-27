@@ -34,7 +34,7 @@ class Controller(Node):
         #Se hacen las suscripciones pertinentes
         self.subscription_light = self.create_subscription(
             Int32,
-            'traffic_status',
+            'color_detection',
             self.signal_callback_traffic,
             rclpy.qos.qos_profile_sensor_data )
 
@@ -56,34 +56,10 @@ class Controller(Node):
         self.angulo_objetivo = 0.0
         self.errorTheta = 0.0
 
-        #Variables para el control
-        #Theta 
-        #Valores de k
-        self.kpTheta = 0.2
-        self.kiTheta = 0.0
-        self.kdTheta = 0.0
-        #Resultado operaciones
-        self.PTheta = 0.0
-        self.ITheta = 0.0
-        self.DTheta = 0.0
-        #Control
-        self.UTheta = 0.0
-        #Lineal
-        #Valores de k
-        self.kpLineal = 0.3
-        self.kiLineal = 0.0
-        self.kdLineal = 0.0
-        #Resultados operaciones
-        self.PLineal = 0.0
-        self.ILineal = 0.0
-        self.DLineal = 0.0
-        #Control
-        self.Ulineal = 0.0
-
         #Num lados
-        self.numPuntos = 4
+        self.numPuntos = 5
         self.msgType = Int32()
-        self.type = 1
+        self.type = 2
 
 
         self.color_traffic_light = 0
@@ -191,7 +167,7 @@ class Controller(Node):
         # self.get_logger().info(f'-------------')
         # self.get_logger().info(f'Angular ({self.velA})')
         # self.get_logger().info(f'Lineal ({self.velL})')
-        # self.get_logger().info(f'Punto ({self.indice_punto_actual})')
+        self.get_logger().info(f'Color ({self.color_traffic_light})')
 
         
         # Crear el mensaje Twist y publicarlo

@@ -28,6 +28,7 @@ setup(
             'odometry = reto4.odometry:main',
             'controller = reto4.controller:main',
             'path_generator = reto4.path_generator:main',
+            'color_detection = reto4.color_detection:main',
         ],
     },
 )

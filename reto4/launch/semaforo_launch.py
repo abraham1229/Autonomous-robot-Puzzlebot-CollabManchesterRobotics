@@ -29,6 +29,12 @@ def generate_launch_description():
     controller_node = Node(
         package='reto4',
         executable='controller',
+        output='screen'
+    )
+
+    color_detection_node = Node(
+        package='reto4',
+        executable='color_detection',
         output='screen',
         parameters = [config]
     )
@@ -49,5 +55,5 @@ def generate_launch_description():
     )
     
     
-    l_d = LaunchDescription([odometry_node,path_generator_node,controller_node])
+    l_d = LaunchDescription([odometry_node,path_generator_node,controller_node,color_detection_node])
     return l_d
