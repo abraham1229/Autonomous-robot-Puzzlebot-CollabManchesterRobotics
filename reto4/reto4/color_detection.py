@@ -11,15 +11,17 @@ class ColorDetectionNode(Node):
         super().__init__('color_detection')
 
         self.bridge = CvBridge()
-        self.sub = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
+        self.sub = self.create_subscription(Image, '/video_source/raw', self.image_callback, 10)
         self.pub_color = self.create_publisher(Int32, 'color_detection', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_red = self.create_publisher(Image, '/img_processing/red', 10) # Nodo para verificar la identificación de colores rojos en cámara
         self.pub_green = self.create_publisher(Image, '/img_processing/green', 10) # Nodo para verificar la identificación de colores verdes en cámara
         self.pub_yellow = self.create_publisher(Image, '/img_processing/yellow', 10) # Nodo para verificar la identificación de colores amarillos en cámara
  
         # Máscara para identificar colores rojos 
-        self.lower_red = np.array([0, 87, 111])
-        self.upper_red = np.array([10, 255, 255])
+        self.redBajo = np.array([0, 100, 20])
+        self.redAlto = np.array([10, 255, 255])
+        self.redBajo=np.array([170, 30, 100])
+        self.redAlto=np.array([190, 100, 200])
 
         # Máscara para identificar colores verdes 
         self.lower_green = np.array([50, 40, 40])
@@ -36,7 +38,14 @@ class ColorDetectionNode(Node):
         try:
             img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.valid_img = True
-            self.detect_color(img)
+            # Dividir la imagen en tres partes horizontales
+            _, width, _ = img.shape
+            left = width // 3
+            right = width * 2 // 3
+            middle_section = img[:, left:right]
+            
+            # Procesar solamente el tramo del medio
+            self.detect_color(middle_section)
         except Exception as e:
             self.get_logger().info(f'Failed to process image: {str(e)}')
 
@@ -44,16 +53,18 @@ class ColorDetectionNode(Node):
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         # Definir las dimensiones del elemento estructurante
-        SE = np.ones((20, 20), np.uint8)
+        SE = np.ones((15, 15), np.uint8)
 
         #### Detección de ROJO ####
-        mask_red = cv2.inRange(hsv_img, self.lower_red, self.upper_red)
-        detected_red = cv2.bitwise_and(img, img, mask=mask_red)
+
+        maskRed = cv2.inRange(hsv_img, self.redBajo, self.redAlto)
+        maskRed2 = cv2.inRange(hsv_img, self.redBajo, self.redAlto)
+        detected_red = cv2.bitwise_or(maskRed, maskRed2)
         blurred_red = cv2.medianBlur(detected_red, 9)
         eroded_red = cv2.erode(blurred_red, SE, iterations=1)
         dilated_red = cv2.dilate(eroded_red, SE, iterations=1)
         red_edges = cv2.Canny(dilated_red, 75, 250)
-        self.pub_red.publish(self.bridge.cv2_to_imgmsg(red_edges))
+        #self.pub_red.publish(self.bridge.cv2_to_imgmsg(red_edges))
 
         #Detección de VERDE 
         mask_green = cv2.inRange(hsv_img, self.lower_green, self.upper_green)
@@ -62,7 +73,7 @@ class ColorDetectionNode(Node):
         eroded_green = cv2.erode(blurred_green, SE, iterations=1)
         dilated_green = cv2.dilate(eroded_green, SE, iterations=1)
         green_edges = cv2.Canny(dilated_green, 75, 250)
-        self.pub_green.publish(self.bridge.cv2_to_imgmsg(green_edges))
+        #self.pub_green.publish(self.bridge.cv2_to_imgmsg(green_edges))
 
         # Detección de AMARILLOS 
         mask_yellow = cv2.inRange(hsv_img, self.lower_yellow, self.upper_yellow)
@@ -71,7 +82,7 @@ class ColorDetectionNode(Node):
         eroded_yellow = cv2.erode(blurred_yellow, SE, iterations=1)
         dilated_yellow = cv2.dilate(eroded_yellow, SE, iterations=1)
         yellow_edges = cv2.Canny(dilated_yellow, 75, 250)
-        self.pub_yellow.publish(self.bridge.cv2_to_imgmsg(yellow_edges))
+        #self.pub_yellow.publish(self.bridge.cv2_to_imgmsg(yellow_edges))
 
         # Contar los elementos detectados 
         red_count = np.count_nonzero(red_edges)
@@ -83,13 +94,11 @@ class ColorDetectionNode(Node):
         
         # Publicar en el nodo los valores en función del color #
         color_msg = Int32()
-        if max_count == 0:
-            color_msg.data = 0
-        elif max_count == red_count:
+        if max_count == green_count:
             color_msg.data = 1
-        elif max_count == green_count:
-            color_msg.data = 2
         elif max_count == yellow_count:
+            color_msg.data = 2
+        elif max_count == red_count:
             color_msg.data = 3
         
         self.pub_color.publish(color_msg)
