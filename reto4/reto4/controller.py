@@ -88,7 +88,10 @@ class Controller(Node):
      # Callback para recibir los puntos de la trayectoria
     def signal_callback_traffic(self, msg):
         if msg is not None:
-            self.color_traffic_light = msg.data
+            if msg.data == 0:
+                self.color_traffic_light = self.color_traffic_light
+            else:
+                self.color_traffic_light = msg.data
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback(self):
@@ -154,13 +157,13 @@ class Controller(Node):
 
         if self.velA > 0.15:
             self.velA = 0.15
+        
 
-
-        if  self.color_traffic_light == 1:
+        if self.color_traffic_light == 1:
             self.velL = 0.2
         elif self.color_traffic_light == 2:
             self.velL = 0.1
-        elif self.color_traffic_light == 3 or self.color_traffic_light == 0 :
+        elif self.color_traffic_light == 3:
             self.velL = 0.0
 
 
