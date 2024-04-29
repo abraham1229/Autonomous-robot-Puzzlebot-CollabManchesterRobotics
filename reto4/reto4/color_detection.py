@@ -34,6 +34,9 @@ class ColorDetectionNode(Node):
         self.valid_img = False
         self.get_logger().info('Color Detection Node Initialized')
 
+        self.color_actual = 0
+
+
     def image_callback(self, msg):
         try:
             img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -64,7 +67,7 @@ class ColorDetectionNode(Node):
         eroded_red = cv2.erode(blurred_red, SE, iterations=1)
         dilated_red = cv2.dilate(eroded_red, SE, iterations=1)
         red_edges = cv2.Canny(dilated_red, 75, 250)
-        #self.pub_red.publish(self.bridge.cv2_to_imgmsg(red_edges))
+        self.pub_red.publish(self.bridge.cv2_to_imgmsg(red_edges))
 
         #Detección de VERDE 
         mask_green = cv2.inRange(hsv_img, self.lower_green, self.upper_green)
@@ -73,7 +76,7 @@ class ColorDetectionNode(Node):
         eroded_green = cv2.erode(blurred_green, SE, iterations=1)
         dilated_green = cv2.dilate(eroded_green, SE, iterations=1)
         green_edges = cv2.Canny(dilated_green, 75, 250)
-        #self.pub_green.publish(self.bridge.cv2_to_imgmsg(green_edges))
+        self.pub_green.publish(self.bridge.cv2_to_imgmsg(green_edges))
 
         # Detección de AMARILLOS 
         mask_yellow = cv2.inRange(hsv_img, self.lower_yellow, self.upper_yellow)
@@ -82,7 +85,7 @@ class ColorDetectionNode(Node):
         eroded_yellow = cv2.erode(blurred_yellow, SE, iterations=1)
         dilated_yellow = cv2.dilate(eroded_yellow, SE, iterations=1)
         yellow_edges = cv2.Canny(dilated_yellow, 75, 250)
-        #self.pub_yellow.publish(self.bridge.cv2_to_imgmsg(yellow_edges))
+        self.pub_yellow.publish(self.bridge.cv2_to_imgmsg(yellow_edges))
 
         # Contar los elementos detectados 
         red_count = np.count_nonzero(red_edges)
@@ -91,17 +94,24 @@ class ColorDetectionNode(Node):
 
         # Determinar el elemento con mayor incidencia 
         max_count = max(red_count, green_count, yellow_count)
-        
+
         # Publicar en el nodo los valores en función del color #
         color_msg = Int32()
-        if max_count == green_count:
+        if max_count == 0:
+            color_msg.data = 0
+        elif max_count == green_count:
             color_msg.data = 1
         elif max_count == yellow_count:
             color_msg.data = 2
         elif max_count == red_count:
             color_msg.data = 3
+
+        if self.color_actual == color_msg:
+            pass
         
-        self.pub_color.publish(color_msg)
+        else:        
+            self.pub_color.publish(color_msg)
+            self.color_actual = color_msg
   
 
 def main(args=None):

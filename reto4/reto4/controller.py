@@ -65,7 +65,7 @@ class Controller(Node):
         self.msgType = Int32()
         self.type = 2
 
-        self.color_actual = 0
+
         self.color_traffic_light = 0
 
         self.msgType.data = self.type
@@ -155,16 +155,13 @@ class Controller(Node):
         if self.velA > 0.15:
             self.velA = 0.15
 
-        if self.color_actual != self.color_traffic_light:
-            if  self.color_traffic_light == 1:
-                self.velL = 0.2
-                self.color_actual = 1
-            elif self.color_traffic_light == 2:
-                self.velL = 0.1
-                self.color_actual = 2
-            elif self.color_traffic_light == 3 or self.color_traffic_light == 0 :
-                self.velL = 0.0
-                self.color_actual = 3
+
+        if  self.color_traffic_light == 1:
+            self.velL = 0.2
+        elif self.color_traffic_light == 2:
+            self.velL = 0.1
+        elif self.color_traffic_light == 3 or self.color_traffic_light == 0 :
+            self.velL = 0.0
 
 
         if self.errorTheta > 0.05 or self.errorTheta < -0.05:
