@@ -11,7 +11,7 @@ class ColorDetectionNode(Node):
         super().__init__('color_detection')
 
         self.bridge = CvBridge()
-        self.sub = self.create_subscription(Image, '/video_source/raw', self.image_callback, 10)
+        self.sub = self.create_subscription(Image, '/video_source/raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
         self.pub_color = self.create_publisher(Int32, 'color_detection', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_red = self.create_publisher(Image, '/img_processing/red', 10) # Nodo para verificar la identificación de colores rojos en cámara
         self.pub_green = self.create_publisher(Image, '/img_processing/green', 10) # Nodo para verificar la identificación de colores verdes en cámara
