@@ -18,10 +18,10 @@ class ColorDetectionNode(Node):
         self.pub_yellow = self.create_publisher(Image, '/img_processing/yellow', 10) # Nodo para verificar la identificación de colores amarillos en cámara
  
         # Máscara para identificar colores rojos 
-        self.redBajo = np.array([0, 100, 20])
-        self.redAlto = np.array([10, 255, 255])
-        self.redBajo=np.array([170, 30, 100])
-        self.redAlto=np.array([190, 100, 200])
+        self.redBajo = np.array([0, 20, 20])
+        self.redAlto = np.array([4, 255, 255])
+        self.redBajo=np.array([160, 20, 20])
+        self.redAlto=np.array([180, 255, 255])
 
         # Máscara para identificar colores verdes 
         self.lower_green = np.array([50, 40, 40])
