@@ -19,9 +19,9 @@ class ColorDetectionNode(Node):
  
         # Máscara para identificar colores rojos 
         self.redBajo = np.array([0, 20, 20])
-        self.redAlto = np.array([4, 255, 255])
-        self.redBajo=np.array([160, 20, 20])
-        self.redAlto=np.array([180, 255, 255])
+        self.redAlto = np.array([0, 255, 255])
+        self.redBajo=np.array([160, 60, 100])
+        self.redAlto=np.array([180, 100, 255])
 
         # Máscara para identificar colores verdes 
         self.lower_green = np.array([50, 40, 40])
