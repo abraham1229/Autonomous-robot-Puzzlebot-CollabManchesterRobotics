@@ -65,7 +65,7 @@ class Controller(Node):
         self.msgType = Int32()
         self.type = 2
 
-
+        #Lectura del nodo de detección de color
         self.color_traffic_light = 0
 
         self.msgType.data = self.type
@@ -87,6 +87,7 @@ class Controller(Node):
 
      # Callback para recibir los puntos de la trayectoria
     def signal_callback_traffic(self, msg):
+        #Si el dato es diferente a cero se guarda
         if msg is not None:
             if msg.data == 0:
                 self.color_traffic_light = self.color_traffic_light
@@ -101,7 +102,7 @@ class Controller(Node):
         if not self.trayectoria:
             self.get_logger().warn('No hay puntos en la trayectoria')
             return
-        
+        #AL momento de terminar el hexagono se termina el movimiento del robot
         if self.numPuntos >= 8:
                 self.get_logger().info(f'Trayectoria alcanzada')
                 # Detener el robot
@@ -113,7 +114,7 @@ class Controller(Node):
                 self.pub_cmd_vel.publish(twist_msg)
                 return
 
-
+        #Se cambia de trayectoria cuando se acabe la actual
         if self.indice_punto_actual >= len(self.trayectoria)-1 or self.indice_punto_actual > self.numPuntos:
                 self.get_logger().info(f'Type ({self.type})')
                 # Detener el robot
@@ -130,7 +131,7 @@ class Controller(Node):
                 self.indice_punto_actual = 0
                 return
         
-        # Obtener las coordenadas del punto actual en la trayectoria
+        # Obtener las coordenadas del punto actual y anterior en la trayectoria
         target_x, target_y = self.trayectoria[self.indice_punto_actual+1]
 
         target_x_ant, target_y_ant = self.trayectoria[self.indice_punto_actual]
@@ -155,10 +156,11 @@ class Controller(Node):
 
         self.velA = self.kpTheta*self.errorTheta
 
+        #Se acota la velocidad angular
         if self.velA > 0.15:
             self.velA = 0.15
         
-
+        #Se pone la velocidad lineal dependiendo el color leído
         if self.color_traffic_light == 1:
             self.velL = 0.2
         elif self.color_traffic_light == 2:
@@ -170,7 +172,7 @@ class Controller(Node):
         if self.errorTheta > 0.05 or self.errorTheta < -0.05:
             self.velL = 0.0
                 
-
+        #Se cambia de punto deseado en la trayectoria
         if self.errorTheta < 0.05 and self.errorTheta > -0.05 and self.error_distancia < 0.05:
             self.indice_punto_actual += 1
 
