@@ -25,8 +25,8 @@ class ColorDetectionNode(Node):
         self.redAlto=np.array([180, 255, 255])
 
         # Máscara para identificar colores verdes 
-        self.lower_green = np.array([45, 80, 80])
-        self.upper_green = np.array([80, 255, 255])
+        self.lower_green = np.array([70, 50, 50])
+        self.upper_green = np.array([100, 150, 150])
 
         ## Máscara para identificar colores amarillos
         self.lower_yellow = np.array([25, 20, 20])
@@ -56,6 +56,7 @@ class ColorDetectionNode(Node):
 
             if semaforo:
 
+                self.get_logger().info(f'Semaforo')
                 self.detect_color(middle_section)
 
         except Exception as e:
