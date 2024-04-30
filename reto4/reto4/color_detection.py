@@ -87,7 +87,7 @@ class ColorDetectionNode(Node):
         yellow_edges = cv2.Canny(dilated_yellow, 75, 250)
         self.pub_yellow.publish(self.bridge.cv2_to_imgmsg(yellow_edges))
 
-        # Contar los elementos detectados 
+        # Contar los elementos detectados de cada color
         red_count = np.count_nonzero(red_edges)
         green_count = np.count_nonzero(green_edges)
         yellow_count = np.count_nonzero(yellow_edges)
