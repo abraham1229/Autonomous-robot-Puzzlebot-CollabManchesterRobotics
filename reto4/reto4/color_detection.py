@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 
+
 class ColorDetectionNode(Node):
     def __init__(self):
         super().__init__('color_detection')
@@ -19,17 +20,17 @@ class ColorDetectionNode(Node):
  
         # Máscara para identificar colores rojos 
         self.redBajo = np.array([0, 20, 20])
-        self.redAlto = np.array([0, 255, 255])
+        self.redAlto = np.array([10, 255, 255])
         self.redBajo=np.array([160, 60, 100])
-        self.redAlto=np.array([180, 100, 255])
+        self.redAlto=np.array([180, 255, 255])
 
         # Máscara para identificar colores verdes 
-        self.lower_green = np.array([50, 40, 40])
+        self.lower_green = np.array([45, 80, 80])
         self.upper_green = np.array([80, 255, 255])
 
         ## Máscara para identificar colores amarillos
-        self.lower_yellow = np.array([25, 100, 100])
-        self.upper_yellow = np.array([40, 255, 255])
+        self.lower_yellow = np.array([25, 20, 20])
+        self.upper_yellow = np.array([35, 255, 255])
 
         self.valid_img = False
         self.get_logger().info('Color Detection Node Initialized')
@@ -46,12 +47,38 @@ class ColorDetectionNode(Node):
             left = width // 3
             right = width * 2 // 3
             middle_section = img[:, left:right]
-            
-            # Procesar solamente el tramo del medio
-            self.detect_color(middle_section)
+
+            # Contar los círculos en el fotograma
+            # Especificar el rango de radio de los círculos que quieres detectar
+            min_radius = 50
+            max_radius = 300
+            semaforo = self.detectarSemaforo(middle_section, min_radius, max_radius)
+
+            if semaforo:
+
+                self.detect_color(middle_section)
+
         except Exception as e:
             self.get_logger().info(f'Failed to process image: {str(e)}')
 
+    def detectarSemaforo(self,frame, min_radius, max_radius):
+        # Convertir el fotograma a escala de grises
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Detectar círculos utilizando la transformada de Hough circular
+        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20,
+                                param1=60, param2=35, minRadius=min_radius, maxRadius=max_radius)
+
+        if circles is not None:
+            # Si se detectan círculos, devolver el número de círculos encontrados
+            if len(circles[0]) >= 3:
+                return True
+            else:
+                return False
+        else:
+            # Si no se detectan círculos, devolver 0
+            return False
+    
     def detect_color(self, img):
         hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
