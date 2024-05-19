@@ -25,10 +25,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'odometry = reto5.odometry:main',
             'controller = reto4.controller:main',
-            'path_generator = reto4.path_generator:main',
-            'color_detection = reto4.color_detection:main',
+            'error_line = reto4.error_line:main',
         ],
     },
 )
