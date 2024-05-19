@@ -25,8 +25,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'controller = reto4.controller:main',
-            'error_line = reto4.error_line:main',
+            'controller = reto5.controller:main',
+            'error_line = reto5.error_line:main',
         ],
     },
 )

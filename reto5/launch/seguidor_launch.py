@@ -7,13 +7,13 @@ from launch import LaunchDescription
 def generate_launch_description():
 
     controller_node = Node(
-        package='reto4',
+        package='reto5',
         executable='controller',
         output='screen'
     )
 
     error_line_node = Node(
-        package='reto4',
+        package='reto5',
         executable='error_line',
         output='screen'
     )

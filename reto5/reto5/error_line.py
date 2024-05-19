@@ -37,7 +37,7 @@ class ColorDetectionNode(Node):
 
     
     def line_detection_callback(self):
-        self.errorMsg.data = 0.0
+        self.errorMsg.data = 0
         self.pub_error.publish(self.errorMsg)
 
   
