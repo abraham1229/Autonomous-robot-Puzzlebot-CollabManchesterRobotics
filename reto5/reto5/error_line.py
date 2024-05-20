@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
@@ -13,7 +13,7 @@ class ColorDetectionNode(Node):
 
         self.bridge = CvBridge()
         self.sub_img = self.create_subscription(Image, '/video_source/raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
-        self.pub_error = self.create_publisher(Int32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
+        self.pub_error = self.create_publisher(Float32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_line_image = self.create_publisher(Image, '/img_line', 10) # Nodo para verificar la identificación de colores rojos en cámara
         
         self.timer_period = 0.5
@@ -21,9 +21,8 @@ class ColorDetectionNode(Node):
 
         # Imagen
         self.cameraImg = np.zeros((480, 640, 3), dtype=np.uint8)
-        # Mensaje de error  
-        self.errorMsg = Int32()
-        self.errorMsg = 0.0
+         # Mensaje de error  
+        self.errorMsg = Float32()
         
         self.get_logger().info('Line detection Node Initialized')
 
@@ -37,13 +36,14 @@ class ColorDetectionNode(Node):
 
     
     def line_detection_callback(self):
-        self.errorMsg.data = self.pendiente_centroides(self.cameraImg)
+        self.errorMsg.data = self.calculoPendiente(self.cameraImg)
         self.pub_error.publish(self.errorMsg)
 
     def calculoPendiente(self,img):
         imgRecortadaRedim = self.resize_image(img)
         imgBinarizada = self.preprocess(imgRecortadaRedim)
         pendiente = self.pendiente_centroides(imgBinarizada)
+        return pendiente
 
     ## Función que redimensiona y de la misma manera recorta la imágen
     def resize_image(self, img):
@@ -102,7 +102,8 @@ class ColorDetectionNode(Node):
             midpoint_x = (cx1 + cx2) // 2 
             midpoint_y = (cy1 + cy2) // 2
             pendiente = (centroide_iy - midpoint_y) / (centroide_ix - midpoint_x)
-        
+        else:
+            pendiente = 0.0
         return pendiente
   
 
