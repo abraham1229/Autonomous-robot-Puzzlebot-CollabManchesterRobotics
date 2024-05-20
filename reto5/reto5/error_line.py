@@ -18,11 +18,16 @@ class ColorDetectionNode(Node):
         
         self.timer_period = 0.5
         self.timer = self.create_timer(self.timer_period, self.line_detection_callback)
-
+       
         # Imagen
         self.cameraImg = np.zeros((480, 640, 3), dtype=np.uint8)
+        self.imgLecture = False
          # Mensaje de error  
         self.errorMsg = Float32()
+
+        # Mensajes de errores
+        self.centro_img_x = 0
+        self.centroide_primer_punto_x = 0
         
         self.get_logger().info('Line detection Node Initialized')
 
@@ -30,20 +35,24 @@ class ColorDetectionNode(Node):
     def image_callback(self, msg):
         try:
             self.cameraImg = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            
+            self.imgLecture = True
         except Exception as e:
             self.get_logger().info(f'Failed to process image: {str(e)}')
 
     
     def line_detection_callback(self):
-        self.errorMsg.data = self.calculoPendiente(self.cameraImg)
-        self.pub_error.publish(self.errorMsg)
+        if self.imgLecture:
+            self.errorMsg.data = self.calculoError(self.cameraImg)
+            self.pub_error.publish(self.errorMsg)
+            self.get_logger().info(f'Color ({self.errorMsg})')
+        else:
+            self.get_logger().info(f'Failed to process image')
 
-    def calculoPendiente(self,img):
+    def calculoError(self,img):
         imgRecortadaRedim = self.resize_image(img)
         imgBinarizada = self.preprocess(imgRecortadaRedim)
-        pendiente = self.pendiente_centroides(imgBinarizada)
-        return pendiente
+        error = self.pendiente_centroides(imgBinarizada)
+        return error
 
     ## Función que redimensiona y de la misma manera recorta la imágen
     def resize_image(self, img):
@@ -76,36 +85,30 @@ class ColorDetectionNode(Node):
     
     # Función que calcula el error con los centroides
     def pendiente_centroides(self, img_bn):
-        # Se hacen las operaciones morfológicas 
-        SE_e = np.ones((15,15), np.uint8)
-        morf_e = cv2.erode(img_bn, SE_e, iterations = 1)
-        SE_d = np.ones((15,15), np.uint8)
-        morf_d = cv2.dilate(morf_e, SE_d, iterations = 3)
-        bordes = cv2.Canny(morf_d, 50, 150)
-        centroide_ix = bordes.shape[1]/2
-        centroide_iy = bordes.shape[0]/2
+        #Operaciones morfologicas
+        SE_d = np.ones((3,3), np.uint8)
+        morf_d = cv2.dilate(img_bn, SE_d, iterations = 3)
+        SE_e = np.ones((10,10), np.uint8)
+        morf_e = cv2.erode(morf_d, SE_e, iterations = 1)
 
-        # Encontrar contornos en la imagen
-        contornos, _ = cv2.findContours(bordes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # Asegúrate de que se han encontrado al menos dos contornos
-        if len(contornos) >= 2:
-            # Calcula los centroides de los dos contornos
-            M1 = cv2.moments(contornos[0])
-            cx1 = int(M1['m10'] / M1['m00'])
-            cy1 = int(M1['m01'] / M1['m00'])
+        #Conteo de pixeles
+        self.centro_img_x = int(morf_e.shape[1]/2)
+        centro_img_y = int(morf_e.shape[0]-10)
+        dimy = morf_e.shape[0] - 10
 
-            M2 = cv2.moments(contornos[1])
-            cx2 = int(M2['m10'] / M2['m00'])
-            cy2 = int(M2['m01'] / M2['m00'])
+        cont = 0
+        bandera = 0
+        for i in range (morf_e.shape[1]):
+            if morf_e[dimy][i] == 0:
+                cont += 1
+            if (bandera == 0 and morf_e[dimy][i] == 0):
+                self.centroide_primer_punto_x = i
+                centroide_primer_punto_y = dimy
+                bandera = 1
+        error = ((self.centroide_primer_punto_x + cont/2)-self.centro_img_x )
+        error = error/(morf_e.shape[1]/2)
 
-            # Calcula el punto medio entre los dos centroides
-            midpoint_x = (cx1 + cx2) // 2 
-            midpoint_y = (cy1 + cy2) // 2
-            pendiente = (centroide_iy - midpoint_y) / (centroide_ix - midpoint_x)
-        else:
-            pendiente = 0.0
-        return pendiente
-  
+        return error
 
 def main(args=None):
     rclpy.init(args=args)
