@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32,Float32
 from msgs_clase.msg import Vector, Path   # type: ignore
 from geometry_msgs.msg import Twist
 import math
@@ -16,7 +16,7 @@ class Controller(Node):
         
         #Se hacen las suscripciones pertinentes
         self.subscription_light = self.create_subscription(
-            Int32,
+            Float32,
             'error_line',
             self.line_error_callback,
             rclpy.qos.qos_profile_sensor_data )
