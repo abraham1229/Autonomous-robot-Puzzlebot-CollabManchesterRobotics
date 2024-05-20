@@ -30,7 +30,7 @@ class Controller(Node):
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.1
+        self.kpTheta = 3
 
 
         # Mensaje de que el nodo ha sido inicializado
