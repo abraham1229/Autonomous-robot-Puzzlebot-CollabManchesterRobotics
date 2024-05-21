@@ -22,13 +22,15 @@ class ColorDetectionNode(Node):
         # Imagen
         self.cameraImg = np.ones((480, 640, 3), dtype=np.uint8)
         self.imgLecture = False
-        self.imagenProcesada = np.ones((480, 640, 1), dtype=np.uint8)
          # Mensaje de error  
         self.errorMsg = Float32()
 
-        # Mensajes de errores
-        self.centro_img_x = 0
-        self.centroide_primer_punto_x = 0
+
+        # Imágenes de procesos 
+        self.imagenCortada    = np.ones((480, 640, 3), dtype=np.uint8)
+        self.imagenBN  = np.ones((480, 640, 3), dtype=np.uint8)
+        
+        self.imagenProcesada = np.ones((480, 640, 1), dtype=np.uint8)
         
         self.get_logger().info('Line detection Node Initialized')
 
@@ -52,29 +54,29 @@ class ColorDetectionNode(Node):
             self.get_logger().info(f'Failed to process image')
 
     def calculoError(self,img):
-        imgRecortadaRedim = self.resize_image(img)
-        imgBinarizada = self.preprocess(imgRecortadaRedim)
-        error = self.pendiente_centroides(imgBinarizada)
+        self.resize_image(img)
+        self.preprocess(self.imagenCortada)
+        error = self.pendiente_centroides(self.imagenBN)
         return error
 
     ## Función que redimensiona y de la misma manera recorta la imágen
     def resize_image(self, img):
         # Se redimensiona la imágen
-        # ancho_r = img.shape[1] // 2  # Un tercio del ancho original
-        # alto_r = img.shape[0] // 2  # Un tercio del alto original
-        # img_redimensionada = cv2.resize(img, (ancho_r, alto_r))
+        ancho_r = img.shape[1] // 2  # Un tercio del ancho original
+        alto_r = img.shape[0] // 2  # Un tercio del alto original
+        img_redimensionada = cv2.resize(img, (ancho_r, alto_r))
         
         #Se recorta la imágen
-        alto_original = img.shape[0]
-        ancho_original = img.shape[1]
+        alto_original = img_redimensionada.shape[0]
+        ancho_original = img_redimensionada.shape[1]
         inicio_y = 0  # la mitad del alto para el inicio del corte
         fin_y = alto_original-int(alto_original/2) # El final del corte es el final de la imagen
         inicio_x = int(ancho_original // 8)
         fin_x = int(7 * ancho_original // 8)
         
-        imgC = img[inicio_y:fin_y, inicio_x:fin_x]
+        imgC = img_redimensionada[inicio_y:fin_y, inicio_x:fin_x]
         
-        return imgC    
+        self.imagenCortada = imgC   
 
     # Función que hará el preprosesamiento
     def preprocess(self, imgC):
@@ -90,7 +92,9 @@ class ColorDetectionNode(Node):
         # Binarización de tipo Otsu
         # Apply Otsu's thresholding
         _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return imagen_binarizada
+        self.imagenBN = imagen_binarizada
+        
+        self.imagenProcesada = imagen_binarizada
     
     # Función que calcula el error con los centroides
     def pendiente_centroides(self, img_bn):
@@ -99,29 +103,31 @@ class ColorDetectionNode(Node):
         morf_d = cv2.dilate(img_bn, SE_d, iterations = 3)
         SE_e = np.ones((10,10), np.uint8)
         morf_e = cv2.erode(morf_d, SE_e, iterations = 1)
+        
 
         #Conteo de pixeles
-        self.centro_img_x = int(morf_e.shape[1]/2)
+        centro_img_x = int(morf_e.shape[1]/2)
         centro_img_y = int(morf_e.shape[0]-10)
         dimy = morf_e.shape[0] - 10
 
         cont = 0
-        bandera = 0
+        bandera =centroide_primer_punto_x = 0
+        centroide_primer_punto_y = 0
         for i in range (morf_e.shape[1]):
             if morf_e[dimy][i] == 0:
                 cont += 1
             if (bandera == 0 and morf_e[dimy][i] == 0):
-                self.centroide_primer_punto_x = i
+                centroide_primer_punto_x = i
                 centroide_primer_punto_y = dimy
                 bandera = 1
-        error = ((self.centroide_primer_punto_x + cont/2)-self.centro_img_x )/(morf_e.shape[1])
+        error = ((centroide_primer_punto_x + cont/2)-centro_img_x )/(morf_e.shape[1])
 
 
         # Dibujar los centroides en la imagen binarizada
         img_points = cv2.cvtColor(img_bn, cv2.COLOR_GRAY2BGR)
-        cv2.circle(img_points, (self.centro_img_x, centro_img_y), 5, (0, 255, 0), -1)
-        cv2.circle(img_points, (self.centroide_primer_punto_x, centroide_primer_punto_y), 5, (0, 0, 255), -1)
-        self.imagenProcesada = img_points
+        cv2.circle(img_points, (centro_img_x, centro_img_y), 5, (0, 255, 0), -1)
+        cv2.circle(img_points, (centroide_primer_punto_x, centroide_primer_punto_y), 5, (0, 0, 255), -1)
+        
         return error
 
 def main(args=None):
