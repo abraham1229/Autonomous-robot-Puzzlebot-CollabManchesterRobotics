@@ -67,12 +67,12 @@ class ColorDetectionNode(Node):
         #Se recorta la imágen
         alto_original = img.shape[0]
         ancho_original = img.shape[1]
-        inicio_y = int(2*alto_original // 3)  # la mitad del alto para el inicio del corte
-        fin_y = alto_original  # El final del corte es el final de la imagen
+        inicio_y = 0  # la mitad del alto para el inicio del corte
+        fin_y = alto_original-int(alto_original/2) # El final del corte es el final de la imagen
         inicio_x = int(ancho_original // 8)
         fin_x = int(7 * ancho_original // 8)
         
-        imgC = img[0:alto_original-int(alto_original/2), inicio_x:fin_x]
+        imgC = img[inicio_y:fin_y, inicio_x:fin_x]
         
         return imgC    
 
@@ -83,9 +83,13 @@ class ColorDetectionNode(Node):
         #Imagen a escala de grises
         img_g = cv2.cvtColor(filtro_median, cv2.COLOR_BGR2GRAY)
         
-        # Se hace la binarización.
-        _, imagen_binarizada = cv2.threshold(img_g, 85, 255, cv2.THRESH_BINARY)
-        self.imagenProcesada = imagen_binarizada
+        # Se hace la binarización normal
+        # _, imagen_binarizada = cv2.threshold(img_g, 85, 255, cv2.THRESH_BINARY)
+        # self.imagenProcesada = imagen_binarizada
+
+        # Binarización de tipo Otsu
+        # Apply Otsu's thresholding
+        _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         return imagen_binarizada
     
     # Función que calcula el error con los centroides
@@ -111,7 +115,13 @@ class ColorDetectionNode(Node):
                 centroide_primer_punto_y = dimy
                 bandera = 1
         error = ((self.centroide_primer_punto_x + cont/2)-self.centro_img_x )/(morf_e.shape[1])
-    
+
+
+        # Dibujar los centroides en la imagen binarizada
+        img_points = cv2.cvtColor(img_bn, cv2.COLOR_GRAY2BGR)
+        cv2.circle(img_points, (self.centro_img_x, centro_img_y), 5, (0, 255, 0), -1)
+        cv2.circle(img_points, (self.centroide_primer_punto_x, centroide_primer_punto_y), 5, (0, 0, 255), -1)
+        self.imagenProcesada = img_points
         return error
 
 def main(args=None):
