@@ -36,11 +36,19 @@ class ColorDetectionNode(Node):
 
 
     def image_callback(self, msg):
-        try:
+        if msg is not None:
             self.cameraImg = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.imgLecture = True
-        except Exception as e:
-            self.get_logger().info(f'Failed to process image: {str(e)}')
+        else:
+            self.imgLecture = False
+
+        # try:
+        #     self.cameraImg = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        #     self.imgLecture = True
+            
+        # except Exception as e:
+        #     self.imgLecture = False
+        #     self.get_logger().info(f'Failed to process image: {str(e)}')
 
     
     def line_detection_callback(self):
@@ -49,7 +57,7 @@ class ColorDetectionNode(Node):
             self.pub_error.publish(self.errorMsg)
             
             self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
-            self.get_logger().info(f'Color ({self.errorMsg})')
+            self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
 
@@ -94,16 +102,14 @@ class ColorDetectionNode(Node):
         _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         self.imagenBN = imagen_binarizada
         
-        self.imagenProcesada = imagen_binarizada
-    
     # Función que calcula el error con los centroides
     def pendiente_centroides(self, img_bn):
         #Operaciones morfologicas
-        SE_d = np.ones((3,3), np.uint8)
-        morf_d = cv2.dilate(img_bn, SE_d, iterations = 3)
+        SE_d = np.ones((10,10), np.uint8)
+        morf_d = cv2.dilate(img_bn, SE_d, iterations = 5)
         SE_e = np.ones((10,10), np.uint8)
         morf_e = cv2.erode(morf_d, SE_e, iterations = 1)
-        
+        self.imagenProcesada = morf_e
 
         #Conteo de pixeles
         centro_img_x = int(morf_e.shape[1]/2)

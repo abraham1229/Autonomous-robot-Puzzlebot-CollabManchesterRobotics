@@ -30,7 +30,7 @@ class Controller(Node):
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.5
+        self.kpTheta = 0.6
 
 
         # Mensaje de que el nodo ha sido inicializado
@@ -53,8 +53,11 @@ class Controller(Node):
 
         # Por si se necesita imprimir algo
         
-        #self.get_logger().info(f'Color ({1})')
-
+        if self.errorLineal == 0.0:
+            self.velA = 0.0
+            self.velL = 0.0
+        else:
+            self.velL = 0.1
         
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
