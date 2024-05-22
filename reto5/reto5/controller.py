@@ -23,14 +23,14 @@ class Controller(Node):
 
 
         # Velocidades que se le darán al robot
-        self.velL = 0.1
+        self.velL = 0.02
         self.velA = 0.0
         # Variable para leer el error del nodo line_error
         self.errorLineal = 0.0
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.6
+        self.kpTheta = 0.15
 
 
         # Mensaje de que el nodo ha sido inicializado
@@ -46,12 +46,18 @@ class Controller(Node):
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
         
-        self.velA = self.errorLineal * self.kpTheta
+        
 
-        if self.velA > 0.2:
-            self.velA = 0.2
+        if self.errorLineal >= -0.05 and self.errorLineal <= 0.05:
+            self.velA = 0.0
+        
+        else:
+            self.velA = self.errorLineal * self.kpTheta
 
-        # Por si se necesita imprimir algo
+        
+        if self.velA > 0.1:
+            self.velA = 0.1
+
         
         if self.errorLineal == 0.0:
             self.velA = 0.0

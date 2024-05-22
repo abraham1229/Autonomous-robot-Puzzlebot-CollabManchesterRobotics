@@ -113,8 +113,8 @@ class ColorDetectionNode(Node):
 
         #Conteo de pixeles
         centro_img_x = int(morf_e.shape[1]/2)
-        centro_img_y = int(morf_e.shape[0]-10)
-        dimy = morf_e.shape[0] - 10
+        centro_img_y = 10
+        dimy = int(morf_e.shape[0]/2)
 
         cont = 0
         bandera =centroide_primer_punto_x = 0
