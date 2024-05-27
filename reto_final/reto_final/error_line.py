@@ -66,7 +66,8 @@ class ColorDetectionNode(Node):
             #self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
-            
+
+
     def calculoError(self,img):
         self.resize_image(img)
         self.preprocess(self.imagenCortada)
