@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from ultralytics import YOLO
 import rclpy
 from rclpy.node import Node

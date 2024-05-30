@@ -6,6 +6,9 @@ from geometry_msgs.msg import Twist
 import math
 import time
 
+from msgs_clase.msg import InferenceResult
+from msgs_clase.msg import Yolov8Inference
+
 
 class Controller(Node):
     def __init__(self):
@@ -28,6 +31,15 @@ class Controller(Node):
             self.frenado_callback,
             rclpy.qos.qos_profile_sensor_data )
 
+        self.subscription_frenado = self.create_subscription(
+            Yolov8Inference,
+            '/Yolov8_Inference',
+            self.deteccion_callback,
+            rclpy.qos.qos_profile_sensor_data )
+        
+
+
+
 
         self.frenado = 0
         self.historial = 0
@@ -40,6 +52,11 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         self.kpTheta = 0.15
+
+
+        # Variable de la inferencia de YOLO
+        self.yolov8_inference = Yolov8Inference()
+        self.valoresObtenidos = []
 
 
         # Mensaje de que el nodo ha sido inicializado
@@ -56,6 +73,13 @@ class Controller(Node):
         #Si el dato es diferente a cero se guarda
         if msg is not None:
             self.frenado = msg.data
+
+    def deteccion_callback(self, msg):
+        #Si el dato es diferente a cero se guarda
+        if msg is not None:
+            for inference in msg.yolov8_inference:
+                self.valoresObtenidos.append(inference.class_name)
+            
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
@@ -82,16 +106,23 @@ class Controller(Node):
             self.velL = 0.1
             
         
-
-              
-        
-
-        
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
         twist_msg.linear.x = self.velL
         twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(twist_msg)
+
+
+
+        # Manda las clases que obtiene
+        for class_name in self.valoresObtenidos:
+            if class_name == "person": 
+                self.get_logger().info(f'Class names collected: {1}')
+            else: 
+                self.get_logger().info(f'Class names collected: {2}')
+
+
+        self.valoresObtenidos.clear()
 
 
 
