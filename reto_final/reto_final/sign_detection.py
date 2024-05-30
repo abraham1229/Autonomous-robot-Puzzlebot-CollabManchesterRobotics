@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+import numpy as np
 
 from msgs_clase.msg import InferenceResult
 from msgs_clase.msg import Yolov8Inference
@@ -28,11 +29,21 @@ class Camera_subscriber(Node):
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
+
+        self.timer_period = 0.25
+        self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
+
+        self.img = np.ones((480, 640, 3), dtype=np.uint8)
+
     def camera_callback(self, data):
 
-        img = bridge.imgmsg_to_cv2(data, "bgr8")
-        results = self.model(img)
+        self.img = bridge.imgmsg_to_cv2(data, "bgr8")
+        
 
+        
+
+    def timer_callback_signs(self):
+        results = self.model(self.img)
         self.yolov8_inference.header.frame_id = "inference"
         self.yolov8_inference.header.stamp = self.get_clock().now().to_msg()
 
@@ -56,7 +67,7 @@ class Camera_subscriber(Node):
 
         self.img_pub.publish(img_msg)
         self.yolov8_pub.publish(self.yolov8_inference)
-        self.yolov8_inference.yolov8_inference.clear()
+        self.yolov8_inference.yolov8_inference.clear() 
 
 def main(args=None):
     rclpy.init(args=args)
