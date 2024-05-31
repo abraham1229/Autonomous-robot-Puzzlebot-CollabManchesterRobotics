@@ -18,13 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Vector.msg"
   "msg/Path.msg"
   "msg/Error.msg"
-  "msg/InferenceResult.msg"
-  "msg/Yolov8Inference.msg"
   DEPENDENCIES geometry_msgs
 )
-
-
-ament_export_dependencies(rosidl_default_runtime)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
