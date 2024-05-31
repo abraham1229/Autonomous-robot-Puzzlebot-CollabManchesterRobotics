@@ -6,8 +6,8 @@ from geometry_msgs.msg import Twist
 import math
 import time
 
-from msgs_clase.msg import InferenceResult
-from msgs_clase.msg import Yolov8Inference
+from yolov8_msgs.msg import InferenceResult # type: ignore
+from yolov8_msgs.msg import Yolov8Inference # type: ignore
 
 
 class Controller(Node):

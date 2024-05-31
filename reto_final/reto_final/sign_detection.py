@@ -5,8 +5,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import numpy as np
 
-from msgs_clase.msg import InferenceResult
-from msgs_clase.msg import Yolov8Inference
+from yolov8_msgs.msg import InferenceResult # type: ignore
+from yolov8_msgs.msg import Yolov8Inference # type: ignore
 
 bridge = CvBridge()
 
