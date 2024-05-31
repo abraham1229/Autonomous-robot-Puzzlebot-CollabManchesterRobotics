@@ -30,7 +30,7 @@ class Camera_subscriber(Node):
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
 
-        self.timer_period = 0.25
+        self.timer_period = 1
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
@@ -39,11 +39,9 @@ class Camera_subscriber(Node):
 
         self.img = bridge.imgmsg_to_cv2(data, "bgr8")
         
-
         
-
     def timer_callback_signs(self):
-        results = self.model(self.img)
+        results = self.model(source=self.img,show=True,conf=0.4, verbose=False)
         self.yolov8_inference.header.frame_id = "inference"
         self.yolov8_inference.header.stamp = self.get_clock().now().to_msg()
 
@@ -60,7 +58,7 @@ class Camera_subscriber(Node):
                 self.inference_result.right = int(b[3])
                 self.yolov8_inference.yolov8_inference.append(self.inference_result)
 
-            #camera_subscriber.get_logger().info(f"{self.yolov8_inference}")
+            #self.get_logger().info(f"{self.yolov8_inference}")
 
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame)  
