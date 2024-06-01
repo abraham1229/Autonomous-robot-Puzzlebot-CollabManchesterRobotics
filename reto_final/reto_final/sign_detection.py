@@ -4,9 +4,11 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import numpy as np
+from msgs_clase.msg import Signal   # type: ignore
 
 from yolov8_msgs.msg import InferenceResult # type: ignore
 from yolov8_msgs.msg import Yolov8Inference # type: ignore
+
 
 bridge = CvBridge()
 
@@ -15,19 +17,23 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/puzzlebot/DeteccionSeniales1.pt')
+        self.model = YOLO('/home/abraham/DeteccionSeniales1.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
         self.subscription = self.create_subscription(
             Image,
-            '/video_source/raw',
+            '/image_raw',
             self.camera_callback,
-            10)
+            10) 
 
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
+        self.predi_pub = self.create_publisher(Signal, "/signal_bool", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
+
+        
+        self.valoresObtenidos = []
 
         self.timer_period = 0.3
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
@@ -61,12 +67,60 @@ class Camera_subscriber(Node):
 
             #self.get_logger().info(f"{self.yolov8_inference}")
 
+        self.escribirMensaje(self.yolov8_inference)
+
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame)  
 
         self.img_pub.publish(img_msg)
         self.yolov8_pub.publish(self.yolov8_inference)
-        self.yolov8_inference.yolov8_inference.clear() 
+        self.predi_pub.publish(self.senialesDetectadas)
+        
+        self.yolov8_inference.yolov8_inference.clear()
+        self.valoresObtenidos.clear()
+
+    
+    def escribirMensaje(self,yoloInference):
+        # Manda las clases que obtiene
+        self.senialesDetectadas = Signal()
+        
+        for inference in yoloInference.yolov8_inference:
+                self.valoresObtenidos.append(inference.class_name)
+
+        for class_name in self.valoresObtenidos:
+            if class_name == "aheadOnly": 
+                self.senialesDetectadas.ahead_only = True
+            
+            elif class_name == "dot_line": 
+                self.senialesDetectadas.dot_line = True
+            
+            elif class_name == "giveWay": 
+                self.senialesDetectadas.give_way = True
+            
+            elif class_name == "greenLight": 
+                self.senialesDetectadas.green_light = True
+            
+            elif class_name == "redLight": 
+                self.senialesDetectadas.red_light = True
+            
+            elif class_name == "roadwork": 
+                self.senialesDetectadas.roadwork = True
+            
+            elif class_name == "roundabout": 
+                self.senialesDetectadas.roundabout = True
+            
+            elif class_name == "stop": 
+                self.senialesDetectadas.stop = True
+            
+            elif class_name == "turnLeft": 
+                self.senialesDetectadas.turn_left = True
+            
+            elif class_name == "turnRight": 
+                self.senialesDetectadas.turn_right = True
+            
+            elif class_name == "yellowLight": 
+                self.senialesDetectadas.yellow_light = True
+
 
 def main(args=None):
     rclpy.init(args=args)
