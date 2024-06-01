@@ -15,7 +15,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/ros2_ws/src/reto_final/reto_final/yolov8n.pt')
+        self.model = YOLO('/home/abraham/DeteccionSeniales1.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
@@ -30,7 +30,7 @@ class Camera_subscriber(Node):
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
 
-        self.timer_period = 1
+        self.timer_period = 0.4
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
