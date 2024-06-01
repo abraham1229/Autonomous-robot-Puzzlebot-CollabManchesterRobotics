@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32,Float32
-from msgs_clase.msg import Vector, Path   # type: ignore
+from msgs_clase.msg import Vector, Path,Signal  # type: ignore
 from geometry_msgs.msg import Twist
 import math
 import time
@@ -32,13 +32,11 @@ class Controller(Node):
             rclpy.qos.qos_profile_sensor_data )
 
         self.subscription_frenado = self.create_subscription(
-            Yolov8Inference,
-            '/Yolov8_Inference',
+            Signal,
+            '/signal_bool',
             self.deteccion_callback,
             rclpy.qos.qos_profile_sensor_data )
         
-
-
 
 
         self.frenado = 0
@@ -54,10 +52,7 @@ class Controller(Node):
         self.kpTheta = 0.15
 
 
-        # Variable de la inferencia de YOLO
-        self.yolov8_inference = Yolov8Inference()
-        self.valoresObtenidos = []
-
+        self.senialesBool = Signal()
 
         # Mensaje de que el nodo ha sido inicializado
         self.get_logger().info('Controller node initialized')
@@ -77,52 +72,74 @@ class Controller(Node):
     def deteccion_callback(self, msg):
         #Si el dato es diferente a cero se guarda
         if msg is not None:
-            for inference in msg.yolov8_inference:
-                self.valoresObtenidos.append(inference.class_name)
+            self.senialesBool = msg
             
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
-        
-        if self.frenado == 1:
-            self.velA = 0.0
-            self.velL = 0.0
 
+
+        # Se hace una aceptación de error para que no oscile
         if self.errorLineal >= -0.05 and self.errorLineal <= 0.05:
             self.velA = 0.0
-        
         else:
             self.velA = self.errorLineal * self.kpTheta
 
         
+        # Se acota el límite de velocidad
         if self.velA > 0.2:
             self.velA = 0.2
 
-        
+        # No avanza hasta que detecte algún error 
         if self.errorLineal == 0.0:
             self.velA = 0.0
             self.velL = 0.0
         else:
             self.velL = 0.1
-            
+        
+
+         #Condiciones de detección de seniales
+        if self.senialesBool.ahead_only:
+            pass
+        
+        elif self.senialesBool.turn_right:
+            pass
+
+        elif self.senialesBool.turn_left:
+            pass
+
+        elif self.senialesBool.roundabout:
+            pass
+
+        elif self.senialesBool.give_way:
+            pass
+
+        elif self.senialesBool.roadwork:
+            pass
+
+        elif self.senialesBool.stop:
+            self.velA = 0.0
+            self.velL = 0.0
+
+        elif self.senialesBool.red_light:
+            self.velA = 0.0
+            self.velL = 0.0
+
+        elif self.senialesBool.yellow_light:
+            self.velL = self.velL/2
+
+        elif self.senialesBool.green_light:
+            pass
+
+        elif self.senialesBool.dot_line:
+            pass
+        
         
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
         twist_msg.linear.x = self.velL
         twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(twist_msg)
-
-
-
-        # Manda las clases que obtiene
-        for class_name in self.valoresObtenidos:
-            if class_name == "person": 
-                self.get_logger().info(f'Class names collected: {1}')
-            else: 
-                self.get_logger().info(f'Class names collected: {2}')
-
-
-        self.valoresObtenidos.clear()
 
 
 
