@@ -37,10 +37,7 @@ class Controller(Node):
             self.deteccion_callback,
             rclpy.qos.qos_profile_sensor_data )
         
-
-
         self.frenado = 0
-        self.historial = 0
         # Velocidades que se le darán al robot
         self.velL = 0.02
         self.velA = 0.0
@@ -53,6 +50,7 @@ class Controller(Node):
 
 
         self.senialesBool = Signal()
+        self.cruce = bool
 
         # Mensaje de que el nodo ha sido inicializado
         self.get_logger().info('Controller node initialized')
@@ -78,44 +76,53 @@ class Controller(Node):
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
 
+        # Se hace la detección si es que está en un cruce
+        if self.senialesBool.dot_line:
+            self.cruce = True
 
-        # Se hace una aceptación de error para que no oscile
-        if self.errorLineal >= -0.05 and self.errorLineal <= 0.05:
-            self.velA = 0.0
+
+        if self.cruce:
+            #Condiciones necesarias cuando tenga cruces
+            if self.senialesBool.ahead_only:
+                pass
+        
+            elif self.senialesBool.turn_right:
+                pass
+
+            elif self.senialesBool.turn_left:
+                pass
+
+            elif self.senialesBool.roundabout:
+                pass
+
+            elif self.senialesBool.give_way:
+                pass
+        
         else:
-            self.velA = self.errorLineal * self.kpTheta
+            
+            # Se hace una aceptación del error para que no oscile
+            if self.errorLineal >= -0.05 and self.errorLineal <= 0.05:
+                self.velA = 0.0
+            else:
+                self.velA = self.errorLineal * self.kpTheta
 
+            
+            # Se acota el límite de velocidad
+            if self.velA > 0.2:
+                self.velA = 0.2
+
+            # No avanza hasta que detecte algún error 
+            if self.errorLineal == 0.0:
+                self.velA = 0.0
+                self.velL = 0.0
+            else:
+                self.velL = 0.1
+            
+
+        #Condiciones de detección de señales generales
         
-        # Se acota el límite de velocidad
-        if self.velA > 0.2:
-            self.velA = 0.2
-
-        # No avanza hasta que detecte algún error 
-        if self.errorLineal == 0.0:
-            self.velA = 0.0
-            self.velL = 0.0
-        else:
-            self.velL = 0.1
-        
-
-         #Condiciones de detección de seniales
-        if self.senialesBool.ahead_only:
-            pass
-        
-        elif self.senialesBool.turn_right:
-            pass
-
-        elif self.senialesBool.turn_left:
-            pass
-
-        elif self.senialesBool.roundabout:
-            pass
-
-        elif self.senialesBool.give_way:
-            pass
-
-        elif self.senialesBool.roadwork:
-            pass
+        if self.senialesBool.roadwork:
+            self.velL = self.velL/3
 
         elif self.senialesBool.stop:
             self.velA = 0.0
@@ -129,12 +136,9 @@ class Controller(Node):
             self.velL = self.velL/2
 
         elif self.senialesBool.green_light:
+            # Se queda igual a cómo quedó en el control
             pass
 
-        elif self.senialesBool.dot_line:
-            pass
-        
-        
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
         twist_msg.linear.x = self.velL
