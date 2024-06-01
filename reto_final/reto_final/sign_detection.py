@@ -17,7 +17,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/DeteccionSeniales1.pt')
+        self.model = YOLO('/home/abraham/DeteccionSeniales2.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
