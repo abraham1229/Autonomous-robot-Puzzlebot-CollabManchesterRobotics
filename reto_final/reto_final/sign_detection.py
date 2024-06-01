@@ -15,25 +15,26 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/DeteccionSeniales1.pt')
+        self.model = YOLO('/home/puzzlebot/DeteccionSeniales1.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
         self.subscription = self.create_subscription(
             Image,
-            'image_raw',
+            '/video_source/raw',
             self.camera_callback,
             10)
-        self.subscription 
 
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
 
-        self.timer_period = 0.4
+        self.timer_period = 0.3
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
+        # Mensaje de que el nodo ha sido inicializado
+        self.get_logger().info('7')
 
     def camera_callback(self, data):
 
@@ -41,7 +42,7 @@ class Camera_subscriber(Node):
         
         
     def timer_callback_signs(self):
-        results = self.model(source=self.img,show=True,conf=0.4, verbose=False)
+        results = self.model(source=self.img,conf=0.4, verbose=True)
         self.yolov8_inference.header.frame_id = "inference"
         self.yolov8_inference.header.stamp = self.get_clock().now().to_msg()
 
