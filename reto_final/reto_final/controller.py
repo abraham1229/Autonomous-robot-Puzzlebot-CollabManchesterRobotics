@@ -113,17 +113,17 @@ class Controller(Node):
             #Condiciones necesarias cuando tenga cruces
             if self.senialesBool.ahead_only:
                 self.distancia_deseado = 0.5
-                self.angulo_deseado_deseado = 0.0
+                self.angulo_deseado = 0.0
                 self.senialCruce = True
 
             elif self.senialesBool.turn_right:
                 self.distancia_deseado = 0.4
-                self.angulo_deseado_deseado = -1.5
+                self.angulo_deseado = -1.5
                 self.senialCruce = True
-
+            # Izquierda debe de ser positivo
             elif self.senialesBool.turn_left:
                 self.distancia_deseado = 0.4
-                self.angulo_deseado_deseado = 1.5
+                self.angulo_deseado = 1.5
                 self.senialCruce = True
 
             elif self.senialesBool.roundabout:
@@ -136,19 +136,20 @@ class Controller(Node):
                 self.velL = 0.0
                 self.senialCruce = False
             
-            if (self.Posx - self.distancia_actual) < self.distancia_deseado:
-                self.velL = 0.1
-                self.velA = 0.0
-            else:
-                errorTheta = self.Postheta - self.angulo_actual
-                errorTheta = self.acotarPi(errorTheta)
-        
-                if errorTheta < self.angulo_deseado+0.05 and errorTheta > self.angulo_deseado-0.05:
+            if self.senialCruce:
+                if (self.Posx - self.distancia_actual) < self.distancia_deseado:
+                    self.velL = 0.1
                     self.velA = 0.0
-                    self.cruce = False
                 else:
-                    self.velL = 0.0
-                    self.velA = 0.1
+                    errorTheta = self.Postheta - self.angulo_actual
+                    errorTheta = self.acotarPi(errorTheta)
+            
+                    if errorTheta < self.angulo_deseado:
+                        self.velL = 0.0
+                        self.velA = 0.1
+                    else:
+                        self.cruce = False
+                        
 
         else:
             
