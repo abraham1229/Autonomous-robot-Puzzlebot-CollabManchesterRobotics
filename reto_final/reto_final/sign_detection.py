@@ -43,11 +43,12 @@ class Camera_subscriber(Node):
         self.get_logger().info('7')
 
     def camera_callback(self, data):
-
-        self.img = bridge.imgmsg_to_cv2(data, "bgr8")
+        if data is not None:
+            self.img = bridge.imgmsg_to_cv2(data, "bgr8")
         
         
     def timer_callback_signs(self):
+
         results = self.model(source=self.img,conf=0.4, verbose=True)
         self.yolov8_inference.header.frame_id = "inference"
         self.yolov8_inference.header.stamp = self.get_clock().now().to_msg()

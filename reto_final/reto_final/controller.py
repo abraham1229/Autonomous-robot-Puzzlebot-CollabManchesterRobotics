@@ -56,7 +56,8 @@ class Controller(Node):
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
-        self.cruce = bool
+        self.cruce = True
+        self.senialCruce = False
 
         # Variables para almacenar la posición actual del robot
         self.Posx = 0.0
@@ -113,23 +114,27 @@ class Controller(Node):
             if self.senialesBool.ahead_only:
                 self.distancia_deseado = 0.5
                 self.angulo_deseado_deseado = 0.0
+                self.senialCruce = True
 
             elif self.senialesBool.turn_right:
                 self.distancia_deseado = 0.4
                 self.angulo_deseado_deseado = -1.5
+                self.senialCruce = True
 
             elif self.senialesBool.turn_left:
                 self.distancia_deseado = 0.4
                 self.angulo_deseado_deseado = 1.5
+                self.senialCruce = True
 
             elif self.senialesBool.roundabout:
-                pass
+                self.senialCruce = True
 
             elif self.senialesBool.give_way:
-                pass
+                self.senialCruce = True
             else:
                 self.velA = 0.0
                 self.velL = 0.0
+                self.senialCruce = False
             
             if (self.Posx - self.distancia_actual) < self.distancia_deseado:
                 self.velL = 0.1
