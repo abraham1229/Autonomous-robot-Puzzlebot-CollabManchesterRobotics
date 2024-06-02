@@ -62,8 +62,8 @@ class ColorDetectionNode(Node):
             self.pub_error.publish(self.errorMsg)
             self.pub_frenado.publish(self.bandera)
             
-            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
-            #self.get_logger().info(f'{self.errorMsg.data})')
+            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))#,encoding="bgr8"
+            self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
 
@@ -77,8 +77,8 @@ class ColorDetectionNode(Node):
     ## Función que redimensiona y de la misma manera recorta la imágen
     def resize_image(self, img):
         # Se redimensiona la imágen
-        ancho_r = img.shape[1] // 2  # Un tercio del ancho original
-        alto_r = img.shape[0] // 2  # Un tercio del alto original
+        ancho_r = img.shape[1] // 3  # Un tercio del ancho original
+        alto_r = img.shape[0] // 3  # Un tercio del alto original
         img_redimensionada = cv2.resize(img, (ancho_r, alto_r))
         
         #Se recorta la imágen
@@ -90,7 +90,7 @@ class ColorDetectionNode(Node):
         fin_x = int(7 * ancho_original // 8)
         
         imgC = img_redimensionada[inicio_y:fin_y, inicio_x:fin_x]
-        
+
         self.imagenCortada = imgC   
 
     # Función que hará el preprosesamiento
@@ -100,6 +100,7 @@ class ColorDetectionNode(Node):
         #Imagen a escala de grises
         img_g = cv2.cvtColor(filtro_median, cv2.COLOR_BGR2GRAY)
         
+        
         # Se hace la binarización normal
         # _, imagen_binarizada = cv2.threshold(img_g, 85, 255, cv2.THRESH_BINARY)
         # self.imagenProcesada = imagen_binarizada
@@ -107,38 +108,43 @@ class ColorDetectionNode(Node):
         # Binarización de tipo Otsu
         # Apply Otsu's thresholding
         _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        #imagen_binarizada = cv2.bitwise_not(imagen_binarizada)
+        self.imagenProcesada = imagen_binarizada
         self.imagenBN = imagen_binarizada
         
     # Función que calcula el error con los centroides
     def pendiente_centroides(self, img_bn):
         #Operaciones morfologicas
-        SE_d = np.ones((10,10), np.uint8)
-        morf_d = cv2.dilate(img_bn, SE_d, iterations = 5)
-        SE_e = np.ones((10,10), np.uint8)
-        morf_e = cv2.erode(morf_d, SE_e, iterations = 1)
-        self.imagenProcesada = morf_e
-
+        SE_d = np.ones((5,5), np.uint8)
+        morf_d = cv2.dilate(img_bn, SE_d, iterations = 1)
+        SE_d2 = np.ones((4,4), np.uint8)
+        morf_d2 = cv2.dilate(morf_d, SE_d2, iterations = 2)
+        SE_d3 = np.ones((2,2), np.uint8)
+        morf_d3 = cv2.dilate(morf_d2, SE_d3, iterations = 2)
+        # SE_e = np.ones((6,6), np.uint8)
+        # morf_d3 = cv2.erode(morf_d3, SE_e, iterations = 1)
+        self.imagenProcesada = morf_d3
         #Conteo de pixeles
-        centro_img_x = int(morf_e.shape[1]/2)
+        centro_img_x = int(morf_d3.shape[1]/2)
         centro_img_y = 10
-        dimy = int(morf_e.shape[0]/4)
+        dimy = int(morf_d3.shape[0]/4)
 
         cont = 0
         cuadricula = 0
         
         bandera =centroide_primer_punto_x = 0
         centroide_primer_punto_y = 0
-        for i in range (morf_e.shape[1]):
-            if morf_e[dimy][i] == 0:
+        for i in range (morf_d3.shape[1]):
+            if morf_d3[dimy][i] == 0:
                 cont += 1
-            if (bandera == 0 and morf_e[dimy][i] == 0):
+            if (bandera == 0 and morf_d3[dimy][i] == 0):
                 centroide_primer_punto_x = i
                 centroide_primer_punto_y = dimy
                 bandera = 1
-        error = ((centroide_primer_punto_x + cont/2)-centro_img_x )/(morf_e.shape[1])
+        error = ((centroide_primer_punto_x + cont/2)-centro_img_x )/(morf_d3.shape[1])
 	
-        for i in range (morf_e.shape[1]):
-            if morf_e[1][i] == 0:
+        for i in range (morf_d3.shape[1]):
+            if morf_d3[1][i] == 0:
                 cuadricula  += 1
                 
         
