@@ -69,8 +69,7 @@ class Camera_subscriber(Node):
         self.escribirMensaje(self.yolov8_inference)
 
         annotated_frame = results[0].plot()
-        img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
-  
+        img_msg = bridge.cv2_to_imgmsg(annotated_frame)  
 
         self.img_pub.publish(img_msg)
         self.yolov8_pub.publish(self.yolov8_inference)
