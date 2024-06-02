@@ -30,8 +30,6 @@ class Camera_subscriber(Node):
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.predi_pub = self.create_publisher(Signal, "/signal_bool", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
-
-
         
         self.valoresObtenidos = []
 
