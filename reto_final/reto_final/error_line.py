@@ -37,6 +37,9 @@ class ColorDetectionNode(Node):
         
         self.imagenProcesada = np.ones((480, 640, 1), dtype=np.uint8)
         
+
+        self.xlast = 240
+        self.ylast = 90
         self.get_logger().info('Line detection Node Initialized')
 
 
@@ -62,7 +65,8 @@ class ColorDetectionNode(Node):
             self.pub_error.publish(self.errorMsg)
             self.pub_frenado.publish(self.bandera)
             
-            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))#,encoding="bgr8"
+            #self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
+            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))
             self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
@@ -71,14 +75,14 @@ class ColorDetectionNode(Node):
     def calculoError(self,img):
         self.resize_image(img)
         self.preprocess(self.imagenCortada)
-        error = self.pendiente_centroides(self.imagenBN)
+        error = self.pendiente_centroides(self.imagenBN,self.imagenCortada)
         return error
 
     ## Función que redimensiona y de la misma manera recorta la imágen
     def resize_image(self, img):
         # Se redimensiona la imágen
-        ancho_r = img.shape[1] // 3  # Un tercio del ancho original
-        alto_r = img.shape[0] // 3  # Un tercio del alto original
+        ancho_r = img.shape[1] // 2  # Un tercio del ancho original
+        alto_r = img.shape[0] // 2  # Un tercio del alto original
         img_redimensionada = cv2.resize(img, (ancho_r, alto_r))
         
         #Se recorta la imágen
@@ -108,61 +112,80 @@ class ColorDetectionNode(Node):
         # Binarización de tipo Otsu
         # Apply Otsu's thresholding
         _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        #imagen_binarizada = cv2.bitwise_not(imagen_binarizada)
+        imagen_binarizada = cv2.bitwise_not(imagen_binarizada)
         self.imagenProcesada = imagen_binarizada
         self.imagenBN = imagen_binarizada
         
     # Función que calcula el error con los centroides
-    def pendiente_centroides(self, img_bn):
-        #Operaciones morfologicas
-        SE_d = np.ones((5,5), np.uint8)
-        morf_d = cv2.dilate(img_bn, SE_d, iterations = 1)
-        SE_d2 = np.ones((4,4), np.uint8)
-        morf_d2 = cv2.dilate(morf_d, SE_d2, iterations = 2)
-        SE_d3 = np.ones((2,2), np.uint8)
-        morf_d3 = cv2.dilate(morf_d2, SE_d3, iterations = 2)
-        # SE_e = np.ones((6,6), np.uint8)
-        # morf_d3 = cv2.erode(morf_d3, SE_e, iterations = 1)
-        self.imagenProcesada = morf_d3
-        #Conteo de pixeles
-        centro_img_x = int(morf_d3.shape[1]/2)
-        centro_img_y = 10
-        dimy = int(morf_d3.shape[0]/4)
+    def pendiente_centroides(self, img_bn,image):
+        # #Operaciones morfologicas
+        # SE_d = np.ones((5,5), np.uint8)
+        # morf_d = cv2.dilate(img_bn, SE_d, iterations = 1)
+        # SE_d2 = np.ones((4,4), np.uint8)
+        # morf_d2 = cv2.dilate(morf_d, SE_d2, iterations = 2)
+        # SE_d3 = np.ones((2,2), np.uint8)
+        # morf_d3 = cv2.dilate(morf_d2, SE_d3, iterations = 2)
+        SE_e = np.ones((5,5), np.uint8)
+        morf_d3 = cv2.erode(img_bn, SE_e, iterations = 5)
+        #self.imagenProcesada = morf_d3
 
-        cont = 0
-        cuadricula = 0
+        off_bottom = 0
+        contornNear =0
+        contours_blk, _ = cv2.findContours(morf_d3.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)	
+        candidates = []
         
-        bandera =centroide_primer_punto_x = 0
-        centroide_primer_punto_y = 0
-        for i in range (morf_d3.shape[1]):
-            if morf_d3[dimy][i] == 0:
-                cont += 1
-            if (bandera == 0 and morf_d3[dimy][i] == 0):
-                centroide_primer_punto_x = i
-                centroide_primer_punto_y = dimy
-                bandera = 1
-        error = ((centroide_primer_punto_x + cont/2)-centro_img_x )/(morf_d3.shape[1])
-	
-        for i in range (morf_d3.shape[1]):
-            if morf_d3[1][i] == 0:
-                cuadricula  += 1
+        num_contours = len(contours_blk)
+        if num_contours > 0:
+            if num_contours == 1:
+                blackbox = cv2.minAreaRect(contours_blk[0])
+            else:
                 
-        
-        if cuadricula == 0 and self.cuadricula_ant != cuadricula:
-            if self.contador == 4:
-                self.bandera.data = 1
-            else: 
-                self.contador += 1
-            
-            
-        self.cuadricula_ant = cuadricula
+                for con_num in range(num_contours):
+                    blackbox = cv2.minAreaRect(contours_blk[con_num])
+                    box = cv2.boxPoints(blackbox)
+                    #Primero es el más bajo
+                    (x_box,y_box) = box[0]
+                    if y_box < 120:
+                        candidates.append((y_box,con_num))
+                candidates = sorted(candidates)
+                
+               
+            # box = cv2.boxPoints(blackbox)
+            # (x_box,y_box) = box[0]
+            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,255),3)
+            # (x_box,y_box) = box[1]
+            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,0),3)
 
-        # Dibujar los centroides en la imagen binarizada
-        img_points = cv2.cvtColor(img_bn, cv2.COLOR_GRAY2BGR)
-        cv2.circle(img_points, (centro_img_x, centro_img_y), 5, (0, 255, 0), -1)
-        cv2.circle(img_points, (centroide_primer_punto_x, centroide_primer_punto_y), 5, (0, 0, 255), -1)
+            if candidates:
+                max_area = 0
+                max_contour = None
+                for neary, contornNear in candidates:
+                    contour = contours_blk[contornNear]
+                    area = cv2.contourArea(contour)
+                    if area > max_area:
+                        max_area = area
+                        max_contour = contour
+
+                if max_contour is not None:
+                    blackbox = cv2.minAreaRect(max_contour)
+            
+
+
+            (x_min, y_min), (w_min, h_min), ang = blackbox	
+            setpoint = int(morf_d3.shape[1]/2)
+            error = int(x_min - setpoint)/ morf_d3.shape[1]
+            ang = int(ang)	 
+            box = cv2.boxPoints(blackbox)
+            box = np.int0(box)
+            cv2.drawContours(image,[box],0,(0,0,255),3)	 
+            cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
         
-        return error
+        self.imagenProcesada = image
+        
+        return error     
+        
 
 def main(args=None):
     rclpy.init(args=args)

@@ -52,11 +52,11 @@ class Controller(Node):
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.15
+        self.kpTheta = 0.23
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
-        self.cruce = True
+        self.cruce = False
         self.senialCruce = False
 
         # Variables para almacenar la posición actual del robot
@@ -72,7 +72,7 @@ class Controller(Node):
         self.angulo_deseado = 0.0
 
         # Mensaje de que el nodo ha sido inicializado
-        self.get_logger().info('Controller node initialized')
+        self.get_logger().info('Controller nodeee init')
 
 
      # Callback para recibir error del centro de la línea
@@ -165,11 +165,8 @@ class Controller(Node):
                 self.velA = 0.2
 
             # No avanza hasta que detecte algún error 
-            if self.errorLinea == 0.0:
-                self.velA = 0.0
-                self.velL = 0.0
-            else:
-                self.velL = 0.1
+            
+            self.velL = 0.08
             
 
         #Condiciones de detección de señales generales
