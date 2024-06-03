@@ -53,6 +53,8 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         self.kpTheta = 0.23
+        self.kdTheta = 0.02
+        self.errorPrevio = 0.0
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
@@ -157,7 +159,17 @@ class Controller(Node):
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
                 self.velA = 0.0
             else:
-                self.velA = self.errorLinea * self.kpTheta
+                # Calcular el término proporcional
+                proportional = self.kpTheta * self.errorLinea
+
+                # Calcular el término derivativo
+                derivative = self.kdTheta * (self.errorLinea - self.errorPrevio)
+
+                # Actualizar el error previo
+                self.errorPrevio = self.errorLinea
+
+                # Calcular la señal de control
+                self.velA = proportional + derivative
 
             
             # Se acota el límite de velocidad

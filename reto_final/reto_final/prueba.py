@@ -131,6 +131,7 @@ class ColorDetectionNode(Node):
 
         error = 0.0
         contornNear =0
+        #Devuelve lista de contornos en formato (nPuntos,x,y)
         contours_blk, _ = cv2.findContours(morf_d3.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)	
         candidates = []
         
@@ -141,14 +142,17 @@ class ColorDetectionNode(Node):
         if num_contours > 0:  
 
             if num_contours == 1:
+                # Devuelve el cuadrado minimo de la unión de puntos
+                # Lo da en función centro (x,y) y (width,height)
                 blackbox = cv2.minAreaRect(contours_blk[0])
 
             elif num_contours >= 3 and num_contours <=4:
                 heights = []
                 for con_num in range(num_contours):
                     blackbox = cv2.minAreaRect(contours_blk[con_num])
+                    #Se obtienen las coordenadas del rectángulo desde minAreaRect
                     box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo
+                    #Primero es el más bajo 
                     (x_box,y_box) = box[0]
                     heights.append(y_box)
 
@@ -161,7 +165,7 @@ class ColorDetectionNode(Node):
                 for con_num in range(num_contours):
                     blackbox = cv2.minAreaRect(contours_blk[con_num])
                     box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo
+                    #Primero es el más bajo (más cerca de la cámara)
                     (x_box,y_box) = box[0]
                     if y_box < 120:
                         candidates.append((y_box,con_num))
@@ -179,6 +183,7 @@ class ColorDetectionNode(Node):
                 max_contour = None
                 for neary, contornNear in candidates:
                     contour = contours_blk[contornNear]
+                    #El que tenga mayor área se toma como la línea
                     area = cv2.contourArea(contour)
                     if area > max_area:
                         max_area = area
