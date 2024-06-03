@@ -65,7 +65,8 @@ class ColorDetectionNode(Node):
             self.pub_error.publish(self.errorMsg)
             self.pub_frenado.publish(self.bandera)
             
-            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))#,encoding="bgr8"
+            #self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
+            self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))
             self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
@@ -124,39 +125,66 @@ class ColorDetectionNode(Node):
         # morf_d2 = cv2.dilate(morf_d, SE_d2, iterations = 2)
         # SE_d3 = np.ones((2,2), np.uint8)
         # morf_d3 = cv2.dilate(morf_d2, SE_d3, iterations = 2)
-        SE_e = np.ones((2,2), np.uint8)
-        morf_d3 = cv2.erode(img_bn, SE_e, iterations = 4)
-        self.imagenProcesada = morf_d3
-        max_area = 0
+        SE_e = np.ones((5,5), np.uint8)
+        morf_d3 = cv2.erode(img_bn, SE_e, iterations = 5)
+        #self.imagenProcesada = morf_d3
+
         off_bottom = 0
-
+        contornNear =0
         contours_blk, _ = cv2.findContours(morf_d3.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)	
+        candidates = []
         
+        num_contours = len(contours_blk)
+        if num_contours > 0:
+            if num_contours == 1:
+                blackbox = cv2.minAreaRect(contours_blk[0])
+            else:
+                
+                for con_num in range(num_contours):
+                    blackbox = cv2.minAreaRect(contours_blk[con_num])
+                    box = cv2.boxPoints(blackbox)
+                    #Primero es el más bajo
+                    (x_box,y_box) = box[0]
+                    if y_box < 120:
+                        candidates.append((y_box,con_num))
+                candidates = sorted(candidates)
+                
+               
+            # box = cv2.boxPoints(blackbox)
+            # (x_box,y_box) = box[0]
+            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,255),3)
+            # (x_box,y_box) = box[1]
+            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,0),3)
+
+            if candidates:
+                max_area = 0
+                max_contour = None
+                for neary, contornNear in candidates:
+                    contour = contours_blk[contornNear]
+                    area = cv2.contourArea(contour)
+                    if area > max_area:
+                        max_area = area
+                        max_contour = contour
+
+                if max_contour is not None:
+                    blackbox = cv2.minAreaRect(max_contour)
+            
 
 
-        for contour in contours_blk:
-            area = cv2.contourArea(contour)
-            if area > max_area:
-                max_area = area
-                max_contour = contour
-
-
-
-        blackbox = cv2.minAreaRect(max_contour)
-        (x_min, y_min), (w_min, h_min), ang = blackbox	
-        setpoint = int(morf_d3.shape[1]/2)
-        error = int(x_min - setpoint)/ morf_d3.shape[1]
-        ang = int(ang)	 
-        box = cv2.boxPoints(blackbox)
-        box = np.int0(box)
-        cv2.drawContours(image,[max_contour],0,(0,0,255),3)	 
-        cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
+            (x_min, y_min), (w_min, h_min), ang = blackbox	
+            setpoint = int(morf_d3.shape[1]/2)
+            error = int(x_min - setpoint)/ morf_d3.shape[1]
+            ang = int(ang)	 
+            box = cv2.boxPoints(blackbox)
+            box = np.int0(box)
+            cv2.drawContours(image,[box],0,(0,0,255),3)	 
+            cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
         
         self.imagenProcesada = image
         
-        return 0.0     
+        return error     
         
 
 def main(args=None):
