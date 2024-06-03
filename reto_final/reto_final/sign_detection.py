@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+import cv2
 import numpy as np
 from msgs_clase.msg import Signal   # type: ignore
 
@@ -23,7 +24,7 @@ class Camera_subscriber(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/image_raw',
+            '/video_source/raw',
             self.camera_callback,
             10) 
 
@@ -43,6 +44,9 @@ class Camera_subscriber(Node):
     def camera_callback(self, data):
         if data is not None:
             self.img = bridge.imgmsg_to_cv2(data, "bgr8")
+            # Voltear la imagen horizontalmente y luego verticalmente
+            self.img = cv2.rotate(self.img, cv2.ROTATE_180)
+
         
         
     def timer_callback_signs(self):
