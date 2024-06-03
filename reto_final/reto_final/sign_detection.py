@@ -95,7 +95,7 @@ class Camera_subscriber(Node):
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
             
-            elif class_name == "dot_line": 
+            elif class_name == "dotLine": 
                 self.senialesDetectadas.dot_line = True
             
             elif class_name == "giveWay": 
