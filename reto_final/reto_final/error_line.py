@@ -165,10 +165,15 @@ class ColorDetectionNode(Node):
                 for con_num in range(num_contours):
                     blackbox = cv2.minAreaRect(contours_blk[con_num])
                     box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo (más cerca de la cámara)
-                    (x_box,y_box) = box[0]
-                    if y_box < 120:
-                        candidates.append((y_box,con_num))
+                    #Encuentra el más bajo de cada contorno
+                    # Encontrar el vértice con el menor valor en y en el contorno actual
+                    min_y_global = 120
+                    for i, (x_box, y_box) in enumerate(box):
+                        if y_box <= min_y_global:
+                            min_y_global = y_box
+
+                    if min_y_global < 20:
+                        candidates.append((min_y_global,con_num))
                 candidates = sorted(candidates)
                 
                
