@@ -105,7 +105,7 @@ class Controller(Node):
     def timer_callback_controller(self):
 
         # Se hace la detección si es que está en un cruce
-        if self.frenado == 1:
+        if self.senialesBool.dot_line:
             self.cruce = True
             self.distancia_actual = self.Posx
             self.angulo_actual = self.Postheta

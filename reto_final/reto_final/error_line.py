@@ -146,34 +146,22 @@ class ColorDetectionNode(Node):
                 # Lo da en función centro (x,y) y (width,height)
                 blackbox = cv2.minAreaRect(contours_blk[0])
 
-            elif num_contours >= 3 and num_contours <=4:
-                heights = []
+        
+            else:
+                
                 for con_num in range(num_contours):
                     blackbox = cv2.minAreaRect(contours_blk[con_num])
                     #Se obtienen las coordenadas del rectángulo desde minAreaRect
                     box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo 
-                    (x_box,y_box) = box[0]
-                    heights.append(y_box)
-
-                # Check if heights are approximately equal
-                if all(abs(h - heights[0]) < 20 for h in heights):  # Adjust the threshold as needed
-                    self.bandera.data = 1
-
-            if self.bandera.data == 0:
-                
-                for con_num in range(num_contours):
-                    blackbox = cv2.minAreaRect(contours_blk[con_num])
-                    box = cv2.boxPoints(blackbox)
                     #Encuentra el más bajo de cada contorno
                     # Encontrar el vértice con el menor valor en y en el contorno actual
-                    min_y_global = 120
+                    min_y = 120
                     for i, (x_box, y_box) in enumerate(box):
-                        if y_box <= min_y_global:
-                            min_y_global = y_box
-
-                    if min_y_global < 20:
-                        candidates.append((min_y_global,con_num))
+                        if y_box <= min_y:
+                            min_y = y_box
+                    # El vertice más bajo debe de estar cerca de la cámara
+                    if min_y < 20:
+                        candidates.append((min_y,con_num))
                 candidates = sorted(candidates)
                 
                
@@ -199,11 +187,7 @@ class ColorDetectionNode(Node):
             
 
             
-
-        if self.bandera.data == 1:
-            cv2.drawContours(image,contours_blk,-1,(0,0,255),3)	
-            cv2.putText(image,str("linea punteada"),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        else:
+            #Se calcula el x_min
             (x_min, y_min), (w_min, h_min), ang = blackbox	
             setpoint = int(morf_d3.shape[1]/2)
             error = int(x_min - setpoint)/ morf_d3.shape[1]
@@ -211,7 +195,7 @@ class ColorDetectionNode(Node):
             box = cv2.boxPoints(blackbox)
             box = np.int0(box)
             cv2.drawContours(image,[box],0,(0,0,255),3)	 
-            #cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            
             cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
         
