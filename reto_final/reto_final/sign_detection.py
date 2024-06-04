@@ -17,7 +17,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/modelos/DeteccionSeniales3_640.pt')
+        self.model = YOLO('/home/puzzlebot/DeteccionSeniales4_340.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
@@ -37,12 +37,13 @@ class Camera_subscriber(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
-        self.get_logger().info('7')
+        self.get_logger().info('11')
 
     def camera_callback(self, data):
         if data is not None:
             self.img = bridge.imgmsg_to_cv2(data, "bgr8")
             self.img = cv2.rotate(self.img, cv2.ROTATE_180)
+            self.img = cv2.resize(self.img, (340, 340))
 
     def timer_callback_signs(self):
         results = self.model(source=self.img, conf=0.4, verbose=False)

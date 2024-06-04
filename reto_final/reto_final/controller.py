@@ -52,8 +52,8 @@ class Controller(Node):
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.23
-        self.kdTheta = 0.00
+        self.kpTheta = 0.21
+        self.kdTheta = 0.015
         self.errorPrevio = 0.0
 
         # Tipo de mensaje para tener seniales detectadas
@@ -74,7 +74,7 @@ class Controller(Node):
         self.angulo_deseado = 0.0
 
         # Mensaje de que el nodo ha sido inicializado
-        self.get_logger().info('Controller nodeee init')
+        self.get_logger().info('Controller nodeee initialize')
 
 
      # Callback para recibir error del centro de la línea
