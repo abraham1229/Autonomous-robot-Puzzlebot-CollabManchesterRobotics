@@ -53,7 +53,7 @@ class Controller(Node):
         #Variables para el control
         #Theta 
         self.kpTheta = 0.23
-        self.kdTheta = 0.02
+        self.kdTheta = 0.00
         self.errorPrevio = 0.0
 
         # Tipo de mensaje para tener seniales detectadas
