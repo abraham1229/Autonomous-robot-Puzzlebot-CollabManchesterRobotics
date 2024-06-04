@@ -67,7 +67,7 @@ class ColorDetectionNode(Node):
             
             #self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
             self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))
-            self.get_logger().info(f'{self.errorMsg.data})')
+            #self.get_logger().info(f'{self.errorMsg.data})')
         else:
             self.get_logger().info(f'Failed to process image')
 
@@ -129,21 +129,43 @@ class ColorDetectionNode(Node):
         morf_d3 = cv2.erode(img_bn, SE_e, iterations = 5)
         #self.imagenProcesada = morf_d3
 
-        off_bottom = 0
+        error = 0.0
         contornNear =0
+        #Devuelve lista de contornos en formato (nPuntos,x,y)
         contours_blk, _ = cv2.findContours(morf_d3.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)	
         candidates = []
         
         num_contours = len(contours_blk)
-        if num_contours > 0:
+        
+        self.bandera.data = 0
+
+        if num_contours > 0:  
+
             if num_contours == 1:
+                # Devuelve el cuadrado minimo de la unión de puntos
+                # Lo da en función centro (x,y) y (width,height)
                 blackbox = cv2.minAreaRect(contours_blk[0])
-            else:
+
+            elif num_contours >= 3 and num_contours <=4:
+                heights = []
+                for con_num in range(num_contours):
+                    blackbox = cv2.minAreaRect(contours_blk[con_num])
+                    #Se obtienen las coordenadas del rectángulo desde minAreaRect
+                    box = cv2.boxPoints(blackbox)
+                    #Primero es el más bajo 
+                    (x_box,y_box) = box[0]
+                    heights.append(y_box)
+
+                # Check if heights are approximately equal
+                if all(abs(h - heights[0]) < 20 for h in heights):  # Adjust the threshold as needed
+                    self.bandera.data = 1
+
+            if self.bandera.data == 0:
                 
                 for con_num in range(num_contours):
                     blackbox = cv2.minAreaRect(contours_blk[con_num])
                     box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo
+                    #Primero es el más bajo (más cerca de la cámara)
                     (x_box,y_box) = box[0]
                     if y_box < 120:
                         candidates.append((y_box,con_num))
@@ -161,6 +183,7 @@ class ColorDetectionNode(Node):
                 max_contour = None
                 for neary, contornNear in candidates:
                     contour = contours_blk[contornNear]
+                    #El que tenga mayor área se toma como la línea
                     area = cv2.contourArea(contour)
                     if area > max_area:
                         max_area = area
@@ -170,15 +193,20 @@ class ColorDetectionNode(Node):
                     blackbox = cv2.minAreaRect(max_contour)
             
 
+            
 
+        if self.bandera.data == 1:
+            cv2.drawContours(image,contours_blk,-1,(0,0,255),3)	
+            cv2.putText(image,str("linea punteada"),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        else:
             (x_min, y_min), (w_min, h_min), ang = blackbox	
             setpoint = int(morf_d3.shape[1]/2)
             error = int(x_min - setpoint)/ morf_d3.shape[1]
-            ang = int(ang)	 
+            #ang = int(ang)	 
             box = cv2.boxPoints(blackbox)
             box = np.int0(box)
             cv2.drawContours(image,[box],0,(0,0,255),3)	 
-            cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            #cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
             cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
         
