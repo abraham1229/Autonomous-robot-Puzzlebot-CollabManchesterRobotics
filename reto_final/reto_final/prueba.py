@@ -12,7 +12,7 @@ class ColorDetectionNode(Node):
         super().__init__('Error_line')
 
         self.bridge = CvBridge()
-        self.sub_img = self.create_subscription(Image, '/video_source/raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
+        self.sub_img = self.create_subscription(Image, '/image_raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
         self.pub_error = self.create_publisher(Float32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_line_image = self.create_publisher(Image, '/img_line', 10) # Nodo para verificar la identificación de colores rojos en cámara
         self.pub_frenado = self.create_publisher(Int32, 'frenado', 10) # Nodo para verificar la identificación de colores rojos en cámara
@@ -141,74 +141,21 @@ class ColorDetectionNode(Node):
 
         if num_contours > 0:  
 
-            if num_contours == 1:
-                # Devuelve el cuadrado minimo de la unión de puntos
-                # Lo da en función centro (x,y) y (width,height)
-                blackbox = cv2.minAreaRect(contours_blk[0])
-
-            elif num_contours >= 3 and num_contours <=4:
-                heights = []
-                for con_num in range(num_contours):
-                    blackbox = cv2.minAreaRect(contours_blk[con_num])
-                    #Se obtienen las coordenadas del rectángulo desde minAreaRect
-                    box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo 
-                    (x_box,y_box) = box[0]
-                    heights.append(y_box)
-
-                # Check if heights are approximately equal
-                if all(abs(h - heights[0]) < 20 for h in heights):  # Adjust the threshold as needed
-                    self.bandera.data = 1
-
-            if self.bandera.data == 0:
-                
-                for con_num in range(num_contours):
-                    blackbox = cv2.minAreaRect(contours_blk[con_num])
-                    box = cv2.boxPoints(blackbox)
-                    #Primero es el más bajo (más cerca de la cámara)
-                    (x_box,y_box) = box[0]
-                    if y_box < 120:
-                        candidates.append((y_box,con_num))
-                candidates = sorted(candidates)
-                
-               
-            # box = cv2.boxPoints(blackbox)
-            # (x_box,y_box) = box[0]
-            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,255),3)
-            # (x_box,y_box) = box[1]
-            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,0),3)
-
-            if candidates:
-                max_area = 0
-                max_contour = None
-                for neary, contornNear in candidates:
-                    contour = contours_blk[contornNear]
-                    #El que tenga mayor área se toma como la línea
-                    area = cv2.contourArea(contour)
-                    if area > max_area:
-                        max_area = area
-                        max_contour = contour
-
-                if max_contour is not None:
-                    blackbox = cv2.minAreaRect(max_contour)
             
+            # Definir una lista de colores para los vértices
+            colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]  # Rojo, Verde, Azul, Amarillo
 
+            if num_contours > 0:  
+                for contour in contours_blk:
+                    blackbox = cv2.minAreaRect(contour)
+                    box = cv2.boxPoints(blackbox)
+                    
+                    for i, (x_box, y_box) in enumerate(box):
+                        color = colors[i % len(colors)]  # Usar colores de la lista en ciclo
+                        cv2.circle(image, (int(x_box), int(y_box)), 10, color, 3)
+                        
+                cv2.drawContours(image,contours_blk,-1,(0,0,255),3)	
             
-
-        if self.bandera.data == 1:
-            cv2.drawContours(image,contours_blk,-1,(0,0,255),3)	
-            cv2.putText(image,str("linea punteada"),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        else:
-            (x_min, y_min), (w_min, h_min), ang = blackbox	
-            setpoint = int(morf_d3.shape[1]/2)
-            error = int(x_min - setpoint)/ morf_d3.shape[1]
-            #ang = int(ang)	 
-            box = cv2.boxPoints(blackbox)
-            box = np.int0(box)
-            cv2.drawContours(image,[box],0,(0,0,255),3)	 
-            #cv2.putText(image,str(ang),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-            cv2.putText(image,str(error),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-            cv2.line(image, (int(x_min),10 ), (int(x_min),50 ), (255,0,0),3)
         
         self.imagenProcesada = image
         
