@@ -12,7 +12,7 @@ class ColorDetectionNode(Node):
         super().__init__('Error_line')
 
         self.bridge = CvBridge()
-        self.sub_img = self.create_subscription(Image, '/image_raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
+        self.sub_img = self.create_subscription(Image, '/video_source/raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
         self.pub_error = self.create_publisher(Float32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_line_image = self.create_publisher(Image, '/img_line', 10) # Nodo para verificar la identificación de colores rojos en cámara
         self.pub_frenado = self.create_publisher(Int32, 'frenado', 10) # Nodo para verificar la identificación de colores rojos en cámara
@@ -145,16 +145,26 @@ class ColorDetectionNode(Node):
             # Definir una lista de colores para los vértices
             colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]  # Rojo, Verde, Azul, Amarillo
 
-            if num_contours > 0:  
+            if num_contours > 0:
                 for contour in contours_blk:
                     blackbox = cv2.minAreaRect(contour)
                     box = cv2.boxPoints(blackbox)
-                    
+
+                    # Encontrar el vértice con el menor valor en y
+                    min_y = float('inf')
+                    min_point = None
                     for i, (x_box, y_box) in enumerate(box):
-                        color = colors[i % len(colors)]  # Usar colores de la lista en ciclo
-                        cv2.circle(image, (int(x_box), int(y_box)), 10, color, 3)
-                        
-                cv2.drawContours(image,contours_blk,-1,(0,0,255),3)	
+                        if y_box < min_y:
+                            min_y = y_box
+                            min_point = (int(x_box), int(y_box))
+                            min_color = colors[i % len(colors)]  # Usar colores de la lista en ciclo
+                    
+                    # Dibujar solo el vértice con el menor valor en y
+                    if min_point is not None:
+                        cv2.circle(image, min_point, 10, min_color, 3)
+                
+                # Dibujar todos los contornos
+                cv2.drawContours(image, contours_blk, -1, (0, 0, 255), 3)
             
         
         self.imagenProcesada = image
