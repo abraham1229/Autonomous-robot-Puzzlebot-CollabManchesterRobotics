@@ -106,7 +106,7 @@ class Controller(Node):
             self.angulo_actual = self.Postheta
 
 
-        if self.cruce:
+        if self.cruce and self.senialCruce==False:
             #Condiciones necesarias cuando tenga cruces
             if self.senialesBool.ahead_only:
                 self.distancia_deseado = 0.4
@@ -115,19 +115,23 @@ class Controller(Node):
 
             elif self.senialesBool.turn_right:
                 self.distancia_deseado = 0.37
-                self.angulo_deseado = -1.57
+                self.angulo_deseado = -1.5
                 self.senialCruce = True
 
             # Izquierda debe de ser positivo
             elif self.senialesBool.turn_left:
                 self.distancia_deseado = 0.37
-                self.angulo_deseado = 1.57
+                self.angulo_deseado = 1.5
                 self.senialCruce = True
 
             elif self.senialesBool.roundabout:
+                self.distancia_deseado = 0
+                self.angulo_deseado = 3.14
                 self.senialCruce = True
 
             elif self.senialesBool.give_way:
+                self.distancia_deseado = 0
+                self.angulo_deseado = -3.14
                 self.senialCruce = True
 
             else:
@@ -135,29 +139,33 @@ class Controller(Node):
                 self.velL = 0.0
                 self.senialCruce = False
             
-            if self.senialCruce:
-                if (self.Posx - self.distancia_actual) < self.distancia_deseado:
-                    self.velL = 0.1
-                    self.velA = 0.0
-                else:
-                    errorTheta = self.Postheta - self.angulo_actual
+        if self.senialCruce:
+            if (self.Posx - self.distancia_actual) < self.distancia_deseado:
+                self.velL = 0.1
+                self.velA = 0.0
 
-                    if self.angulo_deseado > 0:
-                        if errorTheta < self.angulo_deseado:
-                            self.velL = 0.0
-                            self.velA = 0.1
-                        else:
-                            self.cruce = False
+            else:
+                errorTheta = self.Postheta - self.angulo_actual
 
+                if self.angulo_deseado > 0:
+                    if errorTheta < self.angulo_deseado:
+                        self.velL = 0.0
+                        self.velA = 0.1
                     else:
-                        if errorTheta > self.angulo_deseado:
-                            self.velL = 0.0
-                            self.velA = -0.1
-                        else:
-                            self.cruce = False
+                        self.cruce = False
+                        self.senialCruce = False
+
+                else:
+                    if errorTheta > self.angulo_deseado:
+                        self.velL = 0.0
+                        self.velA = -0.1
+                    else:
+                        self.cruce = False
+                        self.senialCruce = False
 
                     
-        else:
+        elif self.senialCruce == False and self.cruce == False:
+            self.get_logger().info(f'line')
             
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
