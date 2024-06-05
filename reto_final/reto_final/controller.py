@@ -100,7 +100,7 @@ class Controller(Node):
     def timer_callback_controller(self):
 
         # Se hace la detección si es que está en un cruce
-        if self.senialesBool.dot_line:
+        if self.senialesBool.dot_line and self.senialCruce == False:
             self.cruce = True
             self.distancia_actual = self.Posx
             self.angulo_actual = self.Postheta
@@ -183,10 +183,13 @@ class Controller(Node):
                 # Calcular la señal de control
                 self.velA = proportional + derivative
 
-            
-            # Se acota el límite de velocidad
+            #Se acota la velocidad positiva
             if self.velA > 0.2:
                 self.velA = 0.2
+
+            #Se acota la velocidad
+            if self.velA < -0.2:
+                self.velA = -0.2    
 
             # No avanza hasta que detecte algún error 
             
@@ -196,7 +199,7 @@ class Controller(Node):
         #Condiciones de detección de señales generales
         
         if self.senialesBool.roadwork:
-            self.velL = self.velL/3
+            self.velL = 0.7
 
         elif self.senialesBool.stop:
             self.velA = 0.0
@@ -207,7 +210,7 @@ class Controller(Node):
             self.velL = 0.0
 
         elif self.senialesBool.yellow_light:
-            self.velL = self.velL/2
+            self.velL = 0.04
 
         elif self.senialesBool.green_light:
             # Se queda igual a cómo quedó en el control
@@ -218,14 +221,6 @@ class Controller(Node):
         twist_msg.linear.x = self.velL
         twist_msg.angular.z = self.velA
         self.pub_cmd_vel.publish(twist_msg)
-
-    def acotarPi(self,angulo):
-        if angulo >= math.pi:
-            angulo -= 2 * math.pi
-        elif angulo <= -math.pi:
-            angulo += 2 * math.pi
-        return angulo
-
 
 
 
