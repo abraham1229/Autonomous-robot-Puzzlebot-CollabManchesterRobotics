@@ -32,6 +32,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    sign_information = Node(
+        package='reto_final',
+        executable='sign_information',
+        output='screen'
+    )
+    
+
     # #Se ejecuta el graph
     # rqt_graph_node = Node(
     #     package='rqt_graph',
@@ -48,5 +55,5 @@ def generate_launch_description():
     # )
     
     
-    l_d = LaunchDescription([odometry_node,error_line,controller])
+    l_d = LaunchDescription([error_line,sign_information,odometry_node,controller])
     return l_d
