@@ -52,7 +52,7 @@ class Controller(Node):
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
-        self.cruce = True
+        self.cruce = False
         self.senialCruce = False
 
         #Se hace la detección del error
@@ -109,28 +109,28 @@ class Controller(Node):
         if self.cruce and self.senialCruce==False:
             #Condiciones necesarias cuando tenga cruces
             if self.senialesBool.ahead_only:
-                self.distancia_deseado = 0.4
+                self.distancia_deseado = 0.3
                 self.angulo_deseado = 0.0
                 self.senialCruce = True
 
             elif self.senialesBool.turn_right:
-                self.distancia_deseado = 0.37
+                self.distancia_deseado = 0.3
                 self.angulo_deseado = -1.5
                 self.senialCruce = True
 
             # Izquierda debe de ser positivo
             elif self.senialesBool.turn_left:
-                self.distancia_deseado = 0.37
+                self.distancia_deseado = 0.3
                 self.angulo_deseado = 1.5
                 self.senialCruce = True
 
             elif self.senialesBool.roundabout:
-                self.distancia_deseado = 0
+                self.distancia_deseado = 0.3
                 self.angulo_deseado = 3.14
                 self.senialCruce = True
 
             elif self.senialesBool.give_way:
-                self.distancia_deseado = 0
+                self.distancia_deseado = 0.3
                 self.angulo_deseado = -3.14
                 self.senialCruce = True
 

@@ -23,7 +23,7 @@ class Camera_subscriber(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/image_raw',
+            '/sign_information',
             self.camera_callback,
             10) 
 
