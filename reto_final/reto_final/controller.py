@@ -40,7 +40,7 @@ class Controller(Node):
         # Velocidades que se le darán al robot
         self.velL = 0.0
         self.velA = 0.0
-        
+
         # Variable para leer el error del nodo line_error
         self.errorLinea = 0.0
 
@@ -52,8 +52,11 @@ class Controller(Node):
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
-        self.cruce = False
+        self.cruce = True
         self.senialCruce = False
+
+        #Se hace la detección del error
+        self.lecturaError = False
 
         # Variables para almacenar la posición actual del robot
         self.Posx = 0.0
@@ -76,6 +79,9 @@ class Controller(Node):
         #Si el dato es diferente a cero se guarda
         if msg is not None:
             self.errorLinea = msg.data
+            self.lecturaError = True
+        else:
+            self.lecturaError = False
 
     def deteccion_callback(self, msg):
         #Si el dato es diferente a cero se guarda
@@ -103,18 +109,19 @@ class Controller(Node):
         if self.cruce:
             #Condiciones necesarias cuando tenga cruces
             if self.senialesBool.ahead_only:
-                self.distancia_deseado = 0.5
+                self.distancia_deseado = 0.4
                 self.angulo_deseado = 0.0
                 self.senialCruce = True
 
             elif self.senialesBool.turn_right:
-                self.distancia_deseado = 0.4
-                self.angulo_deseado = -1.5
+                self.distancia_deseado = 0.37
+                self.angulo_deseado = -1.57
                 self.senialCruce = True
+
             # Izquierda debe de ser positivo
             elif self.senialesBool.turn_left:
-                self.distancia_deseado = 0.4
-                self.angulo_deseado = 1.5
+                self.distancia_deseado = 0.37
+                self.angulo_deseado = 1.57
                 self.senialCruce = True
 
             elif self.senialesBool.roundabout:
@@ -122,6 +129,7 @@ class Controller(Node):
 
             elif self.senialesBool.give_way:
                 self.senialCruce = True
+
             else:
                 self.velA = 0.0
                 self.velL = 0.0
@@ -133,15 +141,22 @@ class Controller(Node):
                     self.velA = 0.0
                 else:
                     errorTheta = self.Postheta - self.angulo_actual
-                    errorTheta = self.acotarPi(errorTheta)
-            
-                    if errorTheta < self.angulo_deseado:
-                        self.velL = 0.0
-                        self.velA = 0.1
-                    else:
-                        self.cruce = False
-                        
 
+                    if self.angulo_deseado > 0:
+                        if errorTheta < self.angulo_deseado:
+                            self.velL = 0.0
+                            self.velA = 0.1
+                        else:
+                            self.cruce = False
+
+                    else:
+                        if errorTheta > self.angulo_deseado:
+                            self.velL = 0.0
+                            self.velA = -0.1
+                        else:
+                            self.cruce = False
+
+                    
         else:
             
             # Se hace una aceptación del error para que no oscile
