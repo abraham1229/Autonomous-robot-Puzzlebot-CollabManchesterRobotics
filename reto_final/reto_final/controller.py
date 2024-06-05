@@ -25,12 +25,6 @@ class Controller(Node):
             self.line_error_callback,
             rclpy.qos.qos_profile_sensor_data )
         
-        self.subscription_frenado = self.create_subscription(
-            Int32,
-            'frenado',
-            self.frenado_callback,
-            rclpy.qos.qos_profile_sensor_data )
-
         self.subscription_seniales_detectadas = self.create_subscription(
             Signal,
             '/signal_bool',
@@ -43,10 +37,10 @@ class Controller(Node):
             self.odometry_callback,
             rclpy.qos.qos_profile_sensor_data )
         
-        self.frenado = 0
         # Velocidades que se le darán al robot
         self.velL = 0.0
         self.velA = 0.0
+        
         # Variable para leer el error del nodo line_error
         self.errorLinea = 0.0
 
@@ -82,11 +76,6 @@ class Controller(Node):
         #Si el dato es diferente a cero se guarda
         if msg is not None:
             self.errorLinea = msg.data
-
-    def frenado_callback(self, msg):
-        #Si el dato es diferente a cero se guarda
-        if msg is not None:
-            self.frenado = msg.data
 
     def deteccion_callback(self, msg):
         #Si el dato es diferente a cero se guarda
