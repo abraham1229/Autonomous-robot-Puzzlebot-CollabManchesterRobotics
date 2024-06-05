@@ -70,6 +70,14 @@ class Controller(Node):
         self.distancia_deseado = 0.0
         self.angulo_deseado = 0.0
 
+        # Tiempo de detección de señales
+        self.stop_detected_time = 0.0
+        self.stop_wait_time = 2.0  # 3 segundos de espera
+        self.ignore_stop_until_time = 0.0  # Tiempo hasta que se ignore la detección de stop
+
+        # Estado del robot
+        self.waiting_for_stop = False
+
         # Mensaje de que el nodo ha sido inicializado
         self.get_logger().info('Controller node initialized')
 
@@ -98,6 +106,9 @@ class Controller(Node):
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
+        
+        # Se toma el tiempo actual
+        current_time = time.time()
 
         # Se hace la detección si es que está en un cruce
         if self.senialesBool.dot_line and self.senialCruce == False:
@@ -201,9 +212,19 @@ class Controller(Node):
         if self.senialesBool.roadwork:
             self.velL = 0.7
 
-        elif self.senialesBool.stop:
+        # Manejo de la señal de stop
+        if self.senialesBool.stop and current_time > self.ignore_stop_until_time:
             self.velA = 0.0
             self.velL = 0.0
+            if not self.waiting_for_stop:
+                self.waiting_for_stop = True
+                self.stop_detected_time = current_time
+            else:
+                if (current_time - self.stop_detected_time) >= self.stop_wait_time:
+                    self.velL = 0.08
+                    self.waiting_for_stop = False
+                    self.ignore_stop_until_time = current_time + 2.0  # Ignorar stop por 2 segundos después de moverse
+
 
         elif self.senialesBool.red_light:
             self.velA = 0.0
