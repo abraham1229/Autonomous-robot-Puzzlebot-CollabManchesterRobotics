@@ -74,7 +74,7 @@ class Controller(Node):
         self.angulo_deseado = 0.0
 
         # Mensaje de que el nodo ha sido inicializado
-        self.get_logger().info('Controller nodeee initialize')
+        self.get_logger().info('Controller nodeee initialized')
 
 
      # Callback para recibir error del centro de la línea

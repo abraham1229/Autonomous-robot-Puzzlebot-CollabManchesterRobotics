@@ -38,22 +38,6 @@ def generate_launch_description():
         output='screen'
     )
     
-
-    # #Se ejecuta el graph
-    # rqt_graph_node = Node(
-    #     package='rqt_graph',
-    #     executable='rqt_graph',
-    #     output='screen',
-    # )
-
-    # #Se ejecuta el plot
-    # rqt_plot_node = Node(
-    #     package='rqt_plot',
-    #     executable='rqt_plot',
-    #     output='screen',
-    #     arguments=[],  # Se especifican los tópicos a graficar
-    # )
     
-    
-    l_d = LaunchDescription([error_line,sign_information,odometry_node,controller])
+    l_d = LaunchDescription([error_line,odometry_node,controller])
     return l_d

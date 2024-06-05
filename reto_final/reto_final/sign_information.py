@@ -19,7 +19,7 @@ class Sign_information(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/image_raw',
+            '/video_source/raw',
             self.camera_callback,
             10) 
 
@@ -29,7 +29,7 @@ class Sign_information(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
-        self.get_logger().info('Sign information node initialize')
+        self.get_logger().info('Sign information node initialized')
 
     def camera_callback(self, data):
         if data is not None:

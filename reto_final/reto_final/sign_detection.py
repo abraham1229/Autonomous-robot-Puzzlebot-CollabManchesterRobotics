@@ -84,7 +84,7 @@ class Camera_subscriber(Node):
 
             if class_name == "dotLine":
                 print(area)
-                if area > 170000:
+                if area > 13000:
                     self.senialesDetectadas.dot_line = True
             else:
                 if area > max_area:

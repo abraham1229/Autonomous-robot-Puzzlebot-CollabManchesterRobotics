@@ -15,21 +15,16 @@ class ColorDetectionNode(Node):
         self.sub_img = self.create_subscription(Image, '/video_source/raw', self.image_callback, rclpy.qos.qos_profile_sensor_data)
         self.pub_error = self.create_publisher(Float32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_line_image = self.create_publisher(Image, '/img_line', 10) # Nodo para verificar la identificación de colores rojos en cámara
-        self.pub_frenado = self.create_publisher(Int32, 'frenado', 10) # Nodo para verificar la identificación de colores rojos en cámara
         
         self.timer_period = 0.5
         self.timer = self.create_timer(self.timer_period, self.line_detection_callback)
        
-        self.bandera = Int32()  
-        self.contador = 0
-        self.cuadricula_ant = 0
         
         # Imagen
         self.cameraImg = np.ones((480, 640, 3), dtype=np.uint8)
         self.imgLecture = False
          # Mensaje de error  
         self.errorMsg = Float32()
-
 
         # Imágenes de procesos 
         self.imagenCortada    = np.ones((480, 640, 3), dtype=np.uint8)
@@ -63,7 +58,6 @@ class ColorDetectionNode(Node):
         if self.imgLecture:
             self.errorMsg.data = self.calculoError(self.cameraImg)
             self.pub_error.publish(self.errorMsg)
-            self.pub_frenado.publish(self.bandera)
             
             #self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
             self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))
@@ -136,8 +130,6 @@ class ColorDetectionNode(Node):
         candidates = []
         
         num_contours = len(contours_blk)
-        
-        self.bandera.data = 0
 
         if num_contours > 0:  
 
@@ -164,13 +156,6 @@ class ColorDetectionNode(Node):
                         candidates.append((min_y,con_num))
                 candidates = sorted(candidates)
                 
-               
-            # box = cv2.boxPoints(blackbox)
-            # (x_box,y_box) = box[0]
-            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,255),3)
-            # (x_box,y_box) = box[1]
-            # cv2.circle(image,(int(x_box),int(y_box)),5,(255,0,0),3)
-
             if candidates:
                 max_area = 0
                 max_contour = None
@@ -186,7 +171,6 @@ class ColorDetectionNode(Node):
                     blackbox = cv2.minAreaRect(max_contour)
             
 
-            
             #Se calcula el x_min
             (x_min, y_min), (w_min, h_min), ang = blackbox	
             setpoint = int(morf_d3.shape[1]/2)
