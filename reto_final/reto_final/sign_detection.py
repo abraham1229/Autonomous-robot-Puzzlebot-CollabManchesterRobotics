@@ -33,11 +33,12 @@ class Camera_subscriber(Node):
         
         self.valoresObtenidos = []
 
-        self.timer_period = 0.3
+        self.timer_period = 0.2
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
-        self.get_logger().info('11')
+        
+        self.get_logger().info('Sign detection node initialized')
 
     def camera_callback(self, data):
         if data is not None:
@@ -83,7 +84,7 @@ class Camera_subscriber(Node):
             area = self.calcularArea(inference.top, inference.left, inference.bottom, inference.right)
 
             if class_name == "dotLine":
-                print(area)
+                #print(area)
                 if area > 13000:
                     self.senialesDetectadas.dot_line = True
             else:

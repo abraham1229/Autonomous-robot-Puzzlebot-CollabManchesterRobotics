@@ -25,7 +25,7 @@ class Sign_information(Node):
 
         self.img_pub = self.create_publisher(Image, "/sign_information", 1)
         
-        self.timer_period = 0.15
+        self.timer_period = 0.1
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
