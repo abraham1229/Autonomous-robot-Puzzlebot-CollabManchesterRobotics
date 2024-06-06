@@ -111,13 +111,13 @@ class Controller(Node):
         current_time = time.time()
 
         # Se hace la detección si es que está en un cruce
-        if self.senialesBool.dot_line and self.senialCruce == False:
+        if self.senialesBool.dot_line:
             self.cruce = True
             self.distancia_actual = self.Posx
             self.angulo_actual = self.Postheta
 
 
-        if self.cruce and self.senialCruce==False:
+        if self.cruce:
             #Condiciones necesarias cuando tenga cruces
             if self.senialesBool.ahead_only:
                 self.distancia_deseado = 0.3
@@ -175,8 +175,8 @@ class Controller(Node):
                         self.senialCruce = False
 
                     
-        elif self.senialCruce == False and self.cruce == False:
-            #self.get_logger().info(f'{self.errorMsg.data})')
+        else:
+            
             
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
@@ -203,8 +203,13 @@ class Controller(Node):
                 self.velA = -0.2    
 
             # No avanza hasta que detecte algún error 
-            
-            self.velL = 0.08
+            if self.lecturaError:
+                self.velL = 0.08
+                self.get_logger().info(f'hola:(')
+            else:
+                self.get_logger().info(f'pipip:(')
+                self.velL = 0.00
+                self.velA = 0.00
             
 
         #Condiciones de detección de señales generales
@@ -213,18 +218,9 @@ class Controller(Node):
             self.velL = 0.04
 
         # Manejo de la señal de stop
-        if self.senialesBool.stop and current_time > self.ignore_stop_until_time:
+        elif self.senialesBool.stop:
             self.velA = 0.0
             self.velL = 0.0
-            if not self.waiting_for_stop:
-                self.waiting_for_stop = True
-                self.stop_detected_time = current_time
-            else:
-                if (current_time - self.stop_detected_time) >= self.stop_wait_time:
-                    self.velL = 0.08
-                    self.waiting_for_stop = False
-                    self.ignore_stop_until_time = current_time + 2.0  # Ignorar stop por 2 segundos después de moverse
-
 
         elif self.senialesBool.red_light:
             self.velA = 0.0
