@@ -100,8 +100,6 @@ class Controller(Node):
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
 
-        self.get_logger().info(f'{self.distancia_actual,self.angulo_actual}')
-    
         # Se hace la detección si es que está en un cruce
         if self.senialesBool.dot_line and not self.cruce:
             if self.numDeteccionesStop == 0:
