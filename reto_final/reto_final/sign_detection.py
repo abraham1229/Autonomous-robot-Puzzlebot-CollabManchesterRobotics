@@ -44,6 +44,10 @@ class Camera_subscriber(Node):
         self.stop_detected_time = None
         self.stop_signal_sent = False
 
+        # Variables para detectar el dotline
+        self.dot_line_detected_time = None
+        self.dot_line_sent = False
+
         
         self.get_logger().info('Sign detection node initialized')
 
@@ -92,7 +96,22 @@ class Camera_subscriber(Node):
 
             if class_name == "dotLine":
                 if nearest > 280:
-                    self.senialesDetectadas.dot_line = True
+                
+                    if not self.dot_line_detected_time:
+
+                        self.dot_line_detected_time = time.time()
+                        self.senialesDetectadas.dot_line = True
+                        self.dot_line_sent = True
+
+                    else:
+                        elapsed_time = time.time() - self.dot_line_detected_time
+            
+                        if elapsed_time < 2.0:
+                            self.senialesDetectadas.dot_line = True
+
+                        elif elapsed_time >= 10.0:
+                            self.dot_line_sent = False
+                            self.dot_line_detected_time = None
     
             if nearest > max_area:
                     max_area = nearest
@@ -122,13 +141,13 @@ class Camera_subscriber(Node):
                     self.stop_signal_sent = True
                 else:
                     elapsed_time = time.time() - self.stop_detected_time
-                    
+        
                     if elapsed_time < 2.0:
                         self.senialesDetectadas.stop = True
-                        
+
                     elif elapsed_time >= 8.0:
-                        self.senialesDetectadas.stop = False
                         self.stop_signal_sent = False
+                        self.stop_detected_time = None
 
             elif class_name == "turnLeft": 
                 self.senialesDetectadas.turn_left = True
