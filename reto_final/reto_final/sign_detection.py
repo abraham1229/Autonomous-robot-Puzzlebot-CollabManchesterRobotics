@@ -35,7 +35,7 @@ class Camera_subscriber(Node):
         
         self.valoresObtenidos = []
 
-        self.timer_period = 0.2
+        self.timer_period = 0.3
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
