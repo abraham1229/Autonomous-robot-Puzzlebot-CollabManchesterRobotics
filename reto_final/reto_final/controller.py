@@ -54,6 +54,7 @@ class Controller(Node):
         self.senialesBool = Signal()
         self.cruce = False
         self.senialCruce = False
+        self.numDeteccionesStop = 0
 
         #Se hace la detección del error
         self.lecturaError = False
@@ -103,11 +104,14 @@ class Controller(Node):
     
         # Se hace la detección si es que está en un cruce
         if self.senialesBool.dot_line and not self.cruce:
-            
-            self.cruce = True
-            self.senialCruce = False
-            self.distancia_actual = self.Posx
-            self.angulo_actual = self.Postheta
+            if self.numDeteccionesStop == 0:
+                self.numDeteccionesStop = 1
+            else:
+                self.cruce = True
+                self.senialCruce = False
+                self.distancia_actual = self.Posx
+                self.angulo_actual = self.Postheta
+                self.numDeteccionesStop = 0
 
         # En el caso de que se haya detectado la línea punteada:
         if self.cruce:

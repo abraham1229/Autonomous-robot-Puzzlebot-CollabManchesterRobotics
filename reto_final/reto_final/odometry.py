@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
-from msgs_clase.msg import Vector   # type: ignore
+from msgs_clase.msg import Vector, Signal   # type: ignore
 import math
 
 #Se crea el nodo My_Talker_Params tomando objeto de Node.
@@ -24,6 +24,12 @@ class Odometry_Node(Node):
             'VelocityEncR',
             self.signal_callback_right,
             rclpy.qos.qos_profile_sensor_data)
+        
+        self.subscription_seniales_detectadas = self.create_subscription(
+            Signal,
+            '/signal_bool',
+            self.deteccion_callback,
+            rclpy.qos.qos_profile_sensor_data )
         
         #Se crea el publicador que mandará mensaje personalizado
         self.pub_odometry = self.create_publisher(Vector, 'odometria', 1000)
@@ -55,6 +61,9 @@ class Odometry_Node(Node):
         #Se declara mensaje personalizado
         self.msgDato = Vector()
 
+        # Tipo de mensaje para tener seniales detectadas
+        self.senialesBool = Signal()
+
         #Se despliega en pantalla que se ha inicializado el nodo
         self.get_logger().info('Odometry node initialized')
 
@@ -69,9 +78,20 @@ class Odometry_Node(Node):
         if msg is not None:
             self.vel_right = msg.data
 
+    def deteccion_callback(self, msg):
+        #Si el dato es diferente a cero se guarda
+        if msg is not None:
+            self.senialesBool = msg
+
     
     #Se hace callback en el que se calcula la posición en x, y y theta
     def timer_callback(self):
+
+        if self.senialesBool.dot_line:
+            self.theta = 0.0
+            self.posX = 0.0
+            self.posY = 0.0
+
 
         #Se calcula theta punto
         self.velocidadTheta = self.radius*((self.vel_right-self.vel_left)/self.lenght)
