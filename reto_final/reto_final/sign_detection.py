@@ -95,8 +95,8 @@ class Camera_subscriber(Node):
             nearest = inference.bottom
 
             if class_name == "dotLine":
-                if nearest > 280:
-                
+
+                if nearest > 240:
                     if not self.dot_line_detected_time:
 
                         self.dot_line_detected_time = time.time()
@@ -112,10 +112,11 @@ class Camera_subscriber(Node):
                         elif elapsed_time >= 10.0:
                             self.dot_line_sent = False
                             self.dot_line_detected_time = None
-    
-            if nearest > max_area:
-                    max_area = nearest
-                    signal_with_max_area = inference
+
+            if class_name != "dotLine":
+                if nearest > max_area:
+                        max_area = nearest
+                        signal_with_max_area = inference
 
 
         if signal_with_max_area:

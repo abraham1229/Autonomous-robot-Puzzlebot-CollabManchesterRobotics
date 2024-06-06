@@ -70,14 +70,6 @@ class Controller(Node):
         self.distancia_deseado = 0.0
         self.angulo_deseado = 0.0
 
-        # Tiempo de detección de señales
-        self.stop_detected_time = 0.0
-        self.stop_wait_time = 2.0  # 3 segundos de espera
-        self.ignore_stop_until_time = 0.0  # Tiempo hasta que se ignore la detección de stop
-
-        # Estado del robot
-        self.waiting_for_stop = False
-
         # Mensaje de que el nodo ha sido inicializado
         self.get_logger().info('Controller node initialized')
 
@@ -106,77 +98,78 @@ class Controller(Node):
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
-        
-        # Se toma el tiempo actual
-        current_time = time.time()
-
+    
         # Se hace la detección si es que está en un cruce
-        if self.senialesBool.dot_line:
+        if self.senialesBool.dot_line and not self.cruce:
+            self.get_logger().info(f'Puntos')
             self.cruce = True
             self.distancia_actual = self.Posx
             self.angulo_actual = self.Postheta
 
 
         if self.cruce:
-            #Condiciones necesarias cuando tenga cruces
-            if self.senialesBool.ahead_only:
-                self.distancia_deseado = 0.3
-                self.angulo_deseado = 0.0
-                self.senialCruce = True
+            if not self.senialCruce:
+                self.get_logger().info(f'Deteccion')
+                #Condiciones necesarias cuando tenga cruces
+                if self.senialesBool.ahead_only:
+                    self.distancia_deseado = 0.3
+                    self.angulo_deseado = 0.0
+                    self.senialCruce = True
 
-            elif self.senialesBool.turn_right:
-                self.distancia_deseado = 0.3
-                self.angulo_deseado = -1.5
-                self.senialCruce = True
+                elif self.senialesBool.turn_right:
+                    self.distancia_deseado = 0.3
+                    self.angulo_deseado = -1.5
+                    self.senialCruce = True
 
-            # Izquierda debe de ser positivo
-            elif self.senialesBool.turn_left:
-                self.distancia_deseado = 0.3
-                self.angulo_deseado = 1.5
-                self.senialCruce = True
+                # Izquierda debe de ser positivo
+                elif self.senialesBool.turn_left:
+                    self.distancia_deseado = 0.3
+                    self.angulo_deseado = 1.5
+                    self.senialCruce = True
 
-            elif self.senialesBool.roundabout:
-                self.distancia_deseado = 0.3
-                self.angulo_deseado = 3.14
-                self.senialCruce = True
+                elif self.senialesBool.roundabout:
+                    self.distancia_deseado = 0.3
+                    self.angulo_deseado = 3.14
+                    self.senialCruce = True
 
-            elif self.senialesBool.give_way:
-                self.distancia_deseado = 0.3
-                self.angulo_deseado = -3.14
-                self.senialCruce = True
-
-            else:
-                self.velA = 0.0
-                self.velL = 0.0
-                self.senialCruce = False
-            
-        if self.senialCruce:
-            if (self.Posx - self.distancia_actual) < self.distancia_deseado:
-                self.velL = 0.1
-                self.velA = 0.0
-
-            else:
-                errorTheta = self.Postheta - self.angulo_actual
-
-                if self.angulo_deseado > 0:
-                    if errorTheta < self.angulo_deseado:
-                        self.velL = 0.0
-                        self.velA = 0.1
-                    else:
-                        self.cruce = False
-                        self.senialCruce = False
+                elif self.senialesBool.give_way:
+                    self.distancia_deseado = 0.3
+                    self.angulo_deseado = -3.14
+                    self.senialCruce = True
 
                 else:
-                    if errorTheta > self.angulo_deseado:
-                        self.velL = 0.0
-                        self.velA = -0.1
+                    self.velA = 0.0
+                    self.velL = 0.0
+                    self.senialCruce = False
+            
+            else:
+                self.get_logger().info(f'Senial')
+                if (self.Posx - self.distancia_actual) < self.distancia_deseado:
+                    self.velL = 0.1
+                    self.velA = 0.0
+
+                else:
+                    errorTheta = self.Postheta - self.angulo_actual
+
+                    if self.angulo_deseado > 0:
+                        if errorTheta < self.angulo_deseado:
+                            self.velL = 0.0
+                            self.velA = 0.1
+                        else:
+                            self.cruce = False
+                            self.senialCruce = False
+
                     else:
-                        self.cruce = False
-                        self.senialCruce = False
+                        if errorTheta > self.angulo_deseado:
+                            self.velL = 0.0
+                            self.velA = -0.1
+                        else:
+                            self.cruce = False
+                            self.senialCruce = False
 
                     
         else:
-            
+            self.get_logger().info(f'Linea')
             
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
@@ -205,9 +198,8 @@ class Controller(Node):
             # No avanza hasta que detecte algún error 
             if self.lecturaError:
                 self.velL = 0.08
-                self.get_logger().info(f'hola:(')
+            
             else:
-                self.get_logger().info(f'pipip:(')
                 self.velL = 0.00
                 self.velA = 0.00
             
@@ -228,10 +220,6 @@ class Controller(Node):
 
         elif self.senialesBool.yellow_light:
             self.velL = 0.04
-
-        elif self.senialesBool.green_light:
-            # Se queda igual a cómo quedó en el control
-            pass
 
         # Crear el mensaje Twist y publicarlo
         twist_msg = Twist()
