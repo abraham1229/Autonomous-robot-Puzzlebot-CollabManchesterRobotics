@@ -96,7 +96,7 @@ class Camera_subscriber(Node):
 
             if class_name == "dotLine":
 
-                if nearest > 240:
+                if nearest > 220:
                     if not self.dot_line_detected_time:
 
                         self.dot_line_detected_time = time.time()

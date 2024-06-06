@@ -98,18 +98,21 @@ class Controller(Node):
 
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
+
+        self.get_logger().info(f'{self.distancia_actual,self.angulo_actual}')
     
         # Se hace la detección si es que está en un cruce
         if self.senialesBool.dot_line and not self.cruce:
-            self.get_logger().info(f'Puntos')
+            
             self.cruce = True
+            self.senialCruce = False
             self.distancia_actual = self.Posx
             self.angulo_actual = self.Postheta
 
-
+        # En el caso de que se haya detectado la línea punteada:
         if self.cruce:
             if not self.senialCruce:
-                self.get_logger().info(f'Deteccion')
+            
                 #Condiciones necesarias cuando tenga cruces
                 if self.senialesBool.ahead_only:
                     self.distancia_deseado = 0.3
@@ -134,7 +137,7 @@ class Controller(Node):
 
                 elif self.senialesBool.give_way:
                     self.distancia_deseado = 0.3
-                    self.angulo_deseado = -3.14
+                    self.angulo_deseado = 0.0
                     self.senialCruce = True
 
                 else:
@@ -143,7 +146,7 @@ class Controller(Node):
                     self.senialCruce = False
             
             else:
-                self.get_logger().info(f'Senial')
+                
                 if (self.Posx - self.distancia_actual) < self.distancia_deseado:
                     self.velL = 0.1
                     self.velA = 0.0
@@ -158,6 +161,10 @@ class Controller(Node):
                         else:
                             self.cruce = False
                             self.senialCruce = False
+                    
+                    elif self.angulo_deseado == 0:
+                        self.cruce = False
+                        self.senialCruce = False
 
                     else:
                         if errorTheta > self.angulo_deseado:
@@ -166,10 +173,11 @@ class Controller(Node):
                         else:
                             self.cruce = False
                             self.senialCruce = False
+                
 
                     
         else:
-            self.get_logger().info(f'Linea')
+            
             
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
@@ -191,11 +199,11 @@ class Controller(Node):
             if self.velA > 0.2:
                 self.velA = 0.2
 
-            #Se acota la velocidad
+            #Se acota la velocidad negativa
             if self.velA < -0.2:
                 self.velA = -0.2    
 
-            # No avanza hasta que detecte algún error 
+            # No avanza hasta que lea del tópico error 
             if self.lecturaError:
                 self.velL = 0.08
             
