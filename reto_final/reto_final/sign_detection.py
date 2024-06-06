@@ -81,19 +81,20 @@ class Camera_subscriber(Node):
 
         for inference in yoloInference.yolov8_inference:
             class_name = inference.class_name
-            area = self.calcularArea(inference.top, inference.left, inference.bottom, inference.right)
+            nearest = inference.bottom
 
             if class_name == "dotLine":
-                #print(area)
+                area = self.calcularArea(inference.top, inference.left, inference.bottom, inference.right)
                 if area > 13000:
                     self.senialesDetectadas.dot_line = True
             else:
-                if area > max_area:
-                    max_area = area
+                if nearest > max_area:
+                    max_area = nearest
                     signal_with_max_area = inference
 
         if signal_with_max_area:
             class_name = signal_with_max_area.class_name
+            self.get_logger().info(f'{class_name})')
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
             elif class_name == "giveWay": 
