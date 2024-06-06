@@ -176,7 +176,7 @@ class Controller(Node):
 
                     
         elif self.senialCruce == False and self.cruce == False:
-            self.get_logger().info(f'line')
+            #self.get_logger().info(f'{self.errorMsg.data})')
             
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
@@ -210,7 +210,7 @@ class Controller(Node):
         #Condiciones de detección de señales generales
         
         if self.senialesBool.roadwork:
-            self.velL = 0.7
+            self.velL = 0.04
 
         # Manejo de la señal de stop
         if self.senialesBool.stop and current_time > self.ignore_stop_until_time:
