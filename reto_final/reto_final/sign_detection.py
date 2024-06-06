@@ -10,6 +10,8 @@ from msgs_clase.msg import Signal   # type: ignore
 from yolov8_msgs.msg import InferenceResult # type: ignore
 from yolov8_msgs.msg import Yolov8Inference # type: ignore
 
+import time
+
 bridge = CvBridge()
 
 class Camera_subscriber(Node):
@@ -37,6 +39,11 @@ class Camera_subscriber(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
+
+        # Variables para gestionar la señal de stop
+        self.stop_detected_time = None
+        self.stop_signal_sent = False
+
         
         self.get_logger().info('Sign detection node initialized')
 
@@ -78,6 +85,7 @@ class Camera_subscriber(Node):
         max_area = 0
         signal_with_max_area = None
 
+
         for inference in yoloInference.yolov8_inference:
             class_name = inference.class_name
             nearest = inference.bottom
@@ -85,10 +93,11 @@ class Camera_subscriber(Node):
             if class_name == "dotLine":
                 if nearest > 280:
                     self.senialesDetectadas.dot_line = True
-            else:
-                if nearest > max_area:
+    
+            if nearest > max_area:
                     max_area = nearest
                     signal_with_max_area = inference
+
 
         if signal_with_max_area:
             class_name = signal_with_max_area.class_name
@@ -104,15 +113,30 @@ class Camera_subscriber(Node):
                 self.senialesDetectadas.roadwork = True
             elif class_name == "roundabout": 
                 self.senialesDetectadas.roundabout = True
-            elif class_name == "stop": 
-                self.senialesDetectadas.stop = True
+
+            elif class_name == "stop":
+                # Si detectamos "stop", verificamos el tiempo
+                if not self.stop_signal_sent:
+                    self.stop_detected_time = time.time()
+                    self.senialesDetectadas.stop = True
+                    self.stop_signal_sent = True
+                else:
+                    elapsed_time = time.time() - self.stop_detected_time
+                    
+                    if elapsed_time < 2.0:
+                        self.senialesDetectadas.stop = True
+                        
+                    elif elapsed_time >= 8.0:
+                        self.senialesDetectadas.stop = False
+                        self.stop_signal_sent = False
+
             elif class_name == "turnLeft": 
                 self.senialesDetectadas.turn_left = True
             elif class_name == "turnRight": 
                 self.senialesDetectadas.turn_right = True
             elif class_name == "yellowLight": 
                 self.senialesDetectadas.yellow_light = True
-
+        
         self.predi_pub.publish(self.senialesDetectadas)
 
 
