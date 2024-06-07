@@ -76,7 +76,7 @@ class Camera_subscriber(Node):
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
 
-        #self.img_pub.publish(img_msg)
+        self.img_pub.publish(img_msg)
         #self.yolov8_pub.publish(self.yolov8_inference)
 
         self.escribirMensaje(self.yolov8_inference)
@@ -120,6 +120,7 @@ class Camera_subscriber(Node):
 
 
         if signal_with_max_area:
+            #self.get_logger().info(f'{signal_with_max_area.bottom})')
             
             class_name = signal_with_max_area.class_name
             if class_name == "aheadOnly": 
@@ -134,14 +135,14 @@ class Camera_subscriber(Node):
             elif class_name == "greenLight": 
                 self.senialesDetectadas.green_light = True
             elif class_name == "redLight": 
-                if signal_with_max_area.bottom > 80:
-                    self.senialesDetectadas.red_light = True
+                self.senialesDetectadas.red_light = True
+
             elif class_name == "roadwork": 
-                if signal_with_max_area.bottom > 85:
+                if signal_with_max_area.bottom > 80:
                     self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
-                if signal_with_max_area.bottom > 85:
+                if signal_with_max_area.bottom > 70:
                     if self.dot_line_detected_time:
                         elapsed_time = time.time() - self.dot_line_detected_time
                         if elapsed_time > 2.0:
@@ -149,7 +150,7 @@ class Camera_subscriber(Node):
                             self.senialesDetectadas.dot_line = False
 
             elif class_name == "stop":
-                if signal_with_max_area.bottom > 85:
+                if signal_with_max_area.bottom > 80:
                     # Si detectamos "stop", verificamos el tiempo
                     if not self.stop_signal_sent:
                         self.stop_detected_time = time.time()
@@ -170,8 +171,7 @@ class Camera_subscriber(Node):
             elif class_name == "turnRight": 
                 self.senialesDetectadas.turn_left = True
             elif class_name == "yellowLight":
-                if signal_with_max_area.bottom > 80: 
-                    self.senialesDetectadas.yellow_light = True
+                self.senialesDetectadas.yellow_light = True
     
         self.predi_pub.publish(self.senialesDetectadas)
 
