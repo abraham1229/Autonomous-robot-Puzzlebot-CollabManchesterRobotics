@@ -86,7 +86,8 @@ class Odometry_Node(Node):
     
     #Se hace callback en el que se calcula la posición en x, y y theta
     def timer_callback(self):
-
+        
+        # Se reinicia para cambiar marco de referencia.
         if self.senialesBool.dot_line:
             self.theta = 0.0
             self.posX = 0.0
