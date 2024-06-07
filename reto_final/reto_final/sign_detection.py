@@ -120,15 +120,16 @@ class Camera_subscriber(Node):
 
 
         if signal_with_max_area:
+            self.get_logger().info(f'{signal_with_max_area.bottom})')
             class_name = signal_with_max_area.class_name
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
             elif class_name == "giveWay":
-                elapsed_time = time.time() - self.dot_line_detected_time
-                if elapsed_time > 3.0:
-                    self.senialesDetectadas.give_way = True
-                    self.senialesDetectadas.dot_line = False
-
+                if self.dot_line_detected_time:
+                    elapsed_time = time.time() - self.dot_line_detected_time
+                    if elapsed_time > 3.0:
+                        self.senialesDetectadas.give_way = True
+                        self.senialesDetectadas.dot_line = False
 
             elif class_name == "greenLight": 
                 self.senialesDetectadas.green_light = True
@@ -137,11 +138,12 @@ class Camera_subscriber(Node):
             elif class_name == "roadwork": 
                 self.senialesDetectadas.roadwork = True
 
-            elif class_name == "roundabout": 
-                elapsed_time = time.time() - self.dot_line_detected_time
-                if elapsed_time > 2.0:
-                    self.senialesDetectadas.give_way = True
-                    self.senialesDetectadas.dot_line = False
+            elif class_name == "roundabout":
+                if self.dot_line_detected_time:
+                    elapsed_time = time.time() - self.dot_line_detected_time
+                    if elapsed_time > 2.0:
+                        self.senialesDetectadas.give_way = True
+                        self.senialesDetectadas.dot_line = False
 
             elif class_name == "stop":
                 # Si detectamos "stop", verificamos el tiempo

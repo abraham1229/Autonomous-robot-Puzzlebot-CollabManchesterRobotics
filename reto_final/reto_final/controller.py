@@ -14,23 +14,27 @@ class Controller(Node):
     def __init__(self):
         super().__init__('Controller')
         
+        #Publicador para controlar la velocidad del Puzzleboot
         self.pub_cmd_vel = self.create_publisher(Twist, 'cmd_vel', 1000)
         self.timer_period = 0.1
         self.timer = self.create_timer(self.timer_period, self.timer_callback_controller)
         
         #Se hacen las suscripciones pertinentes
+        # Suscripción que lee error de seguimiento de línea
         self.subscription_light = self.create_subscription(
             Float32,
             'error_line',
             self.line_error_callback,
             rclpy.qos.qos_profile_sensor_data )
         
+        # Suscripción que lee las seniales detectadas por YOLO
         self.subscription_seniales_detectadas = self.create_subscription(
             Signal,
             '/signal_bool',
             self.deteccion_callback,
             rclpy.qos.qos_profile_sensor_data )
         
+        # Suscripción para moverse x distancia y y grados para pasar el cruce
         self.subscription_odometry = self.create_subscription(
             Vector,
             'odometria',
@@ -49,6 +53,8 @@ class Controller(Node):
         self.kpTheta = 0.21
         self.kdTheta = 0.015
         self.errorPrevio = 0.0
+        #Controlar si es que aún no se ha publicado el error.
+        self.lecturaError = False
 
         # Tipo de mensaje para tener seniales detectadas
         self.senialesBool = Signal()
@@ -56,16 +62,12 @@ class Controller(Node):
         self.senialCruce = False
         self.numDeteccionesStop = 0
 
-        #Se hace la detección del error
-        self.lecturaError = False
-
-        # Variables para almacenar la posición actual del robot
+        # Variables para almacenar la posición actual del robot (odometría)
         self.Posx = 0.0
         self.Posy = 0.0
         self.Postheta = 0.0
 
-
-        # Valores en tiempod de detección de odometría
+        # Valores para toma de decisiones entre cruces.
         self.distancia_actual = 0.0
         self.angulo_actual = 0.0
         self.distancia_deseado = 0.0
@@ -75,33 +77,35 @@ class Controller(Node):
         self.get_logger().info('Controller node initialized')
 
 
-     # Callback para recibir error del centro de la línea
+    # Callback para recibir error del centro de la línea
     def line_error_callback(self, msg):
-        #Si el dato es diferente a cero se guarda
+        #Si el dato es nulo no se guarda
         if msg is not None:
             self.errorLinea = msg.data
             self.lecturaError = True
         else:
             self.lecturaError = False
 
+    # Callback para recibir las seniales detectadas.
     def deteccion_callback(self, msg):
-        #Si el dato es diferente a cero se guarda
+        #Si el dato es nulo no se guarda
         if msg is not None:
             self.senialesBool = msg
     
     # Callback para recibir la posición actual del robot
     def odometry_callback(self, msg):
+        #Si el dato es nulo no se guarda
         if msg is not None:
             self.Posx = msg.x
             self.Posy = msg.y
             self.Postheta = msg.theta
             
-
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
 
-        # Se hace la detección si es que está en un cruce
+        # Se guarda la detección si es que está en un cruce.
         if self.senialesBool.dot_line and not self.cruce:
+            # Se espera un ciclo para leer odometry reiniciado.
             if self.numDeteccionesStop == 0:
                 self.numDeteccionesStop = 1
             else:
@@ -121,6 +125,7 @@ class Controller(Node):
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
 
+                # 
                 elif self.senialesBool.turn_right:
                     self.distancia_deseado = 0.3
                     self.angulo_deseado = -1.5
@@ -134,7 +139,7 @@ class Controller(Node):
 
                 elif self.senialesBool.roundabout:
                     self.distancia_deseado = 0.3
-                    self.angulo_deseado = 3.14
+                    self.angulo_deseado = 0.0
                     self.senialCruce = True
 
                 elif self.senialesBool.give_way:
@@ -175,15 +180,14 @@ class Controller(Node):
                         else:
                             self.cruce = False
                             self.senialCruce = False
-                
 
-                    
-        else:
-            
-            
+        #Condición de que debe seguir la línea
+        else:         
             # Se hace una aceptación del error para que no oscile
             if self.errorLinea >= -0.05 and self.errorLinea <= 0.05:
                 self.velA = 0.0
+            
+            #Si el error es mayor a +-0.05 se hace el control
             else:
                 # Calcular el término proporcional
                 proportional = self.kpTheta * self.errorLinea
@@ -215,7 +219,6 @@ class Controller(Node):
             
 
         #Condiciones de detección de señales generales
-        
         if self.senialesBool.roadwork:
             self.velL = 0.04
 
