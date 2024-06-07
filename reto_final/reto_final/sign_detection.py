@@ -120,7 +120,7 @@ class Camera_subscriber(Node):
 
 
         if signal_with_max_area:
-            self.get_logger().info(f'{signal_with_max_area.bottom})')
+            
             class_name = signal_with_max_area.class_name
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
@@ -134,40 +134,45 @@ class Camera_subscriber(Node):
             elif class_name == "greenLight": 
                 self.senialesDetectadas.green_light = True
             elif class_name == "redLight": 
-                self.senialesDetectadas.red_light = True
+                if signal_with_max_area.bottom > 80:
+                    self.senialesDetectadas.red_light = True
             elif class_name == "roadwork": 
-                self.senialesDetectadas.roadwork = True
+                if signal_with_max_area.bottom > 85:
+                    self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
-                if self.dot_line_detected_time:
-                    elapsed_time = time.time() - self.dot_line_detected_time
-                    if elapsed_time > 2.0:
-                        self.senialesDetectadas.give_way = True
-                        self.senialesDetectadas.dot_line = False
+                if signal_with_max_area.bottom > 85:
+                    if self.dot_line_detected_time:
+                        elapsed_time = time.time() - self.dot_line_detected_time
+                        if elapsed_time > 2.0:
+                            self.senialesDetectadas.give_way = True
+                            self.senialesDetectadas.dot_line = False
 
             elif class_name == "stop":
-                # Si detectamos "stop", verificamos el tiempo
-                if not self.stop_signal_sent:
-                    self.stop_detected_time = time.time()
-                    self.senialesDetectadas.stop = True
-                    self.stop_signal_sent = True
-                else:
-                    elapsed_time = time.time() - self.stop_detected_time
-        
-                    if elapsed_time < 2.0:
+                if signal_with_max_area.bottom > 85:
+                    # Si detectamos "stop", verificamos el tiempo
+                    if not self.stop_signal_sent:
+                        self.stop_detected_time = time.time()
                         self.senialesDetectadas.stop = True
+                        self.stop_signal_sent = True
+                    else:
+                        elapsed_time = time.time() - self.stop_detected_time
+            
+                        if elapsed_time < 2.0:
+                            self.senialesDetectadas.stop = True
 
-                    elif elapsed_time >= 8.0:
-                        self.stop_signal_sent = False
-                        self.stop_detected_time = None
+                        elif elapsed_time >= 8.0:
+                            self.stop_signal_sent = False
+                            self.stop_detected_time = None
 
             elif class_name == "turnLeft": 
-                self.senialesDetectadas.turn_left = True
-            elif class_name == "turnRight": 
                 self.senialesDetectadas.turn_right = True
-            elif class_name == "yellowLight": 
-                self.senialesDetectadas.yellow_light = True
-        
+            elif class_name == "turnRight": 
+                self.senialesDetectadas.turn_left = True
+            elif class_name == "yellowLight":
+                if signal_with_max_area.bottom > 80: 
+                    self.senialesDetectadas.yellow_light = True
+    
         self.predi_pub.publish(self.senialesDetectadas)
 
 
