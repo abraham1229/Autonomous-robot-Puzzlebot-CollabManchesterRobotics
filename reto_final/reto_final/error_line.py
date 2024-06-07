@@ -16,7 +16,7 @@ class ColorDetectionNode(Node):
         self.pub_error = self.create_publisher(Float32, 'error_line', 10) # Publica el color identificado en la imagen mediante un número
         self.pub_line_image = self.create_publisher(Image, '/img_line', 10) # Nodo para verificar la identificación de colores rojos en cámara
         
-        self.timer_period = 0.2
+        self.timer_period = 0.5
         self.timer = self.create_timer(self.timer_period, self.line_detection_callback)
        
         
