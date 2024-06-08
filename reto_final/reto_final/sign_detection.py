@@ -22,7 +22,7 @@ class Camera_subscriber(Node):
         self.model = YOLO('/home/abraham/modelos/dotline.pt')
 
         self.yolov8_inference = Yolov8Inference()
-
+        # Realiza la suscripción d
         self.subscription = self.create_subscription(
             Image,
             '/sign_information',
@@ -89,18 +89,10 @@ class Camera_subscriber(Node):
         max_area = 0
         signal_with_max_area = None
 
-        vertical_lines_right = []
-        vertical_lines_left = []
-
-        img_width = self.img.shape[1]  # Width of the image
-
-
-
+    
         for inference in yoloInference.yolov8_inference:
             class_name = inference.class_name
             nearest = inference.bottom
-            
-            center_x = (inference.left + inference.right) / 2
             
 
             if class_name == "dotLine":
@@ -121,12 +113,6 @@ class Camera_subscriber(Node):
                         elif elapsed_time >= 10.0:
                             self.dot_line_sent = False
                             self.dot_line_detected_time = None
-
-            if class_name == "verticalLine":
-                if center_x > img_width / 2:  # right side of the image
-                    vertical_lines_right.append(inference)
-                else:  # left side of the image
-                    vertical_lines_left.append(inference)
 
             if class_name != "dotLine":
                 if nearest > max_area:
@@ -188,14 +174,6 @@ class Camera_subscriber(Node):
             elif class_name == "yellowLight":
                 self.senialesDetectadas.yellow_light = True
         
-        # Condiciones para las líneas verticales
-        if len(vertical_lines_right) == 1 and not vertical_lines_left:
-            self.senialesDetectadas.turn_right = True
-        elif len(vertical_lines_left) == 1 and not vertical_lines_right:
-            self.senialesDetectadas.turn_left = True
-        elif len(vertical_lines_right) >= 2:
-            self.senialesDetectadas.turn_right = True
-    
         self.predi_pub.publish(self.senialesDetectadas)
 
 
