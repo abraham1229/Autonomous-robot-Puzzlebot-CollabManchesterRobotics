@@ -120,7 +120,7 @@ class Camera_subscriber(Node):
             # un cruce.
             if class_name == "dotLine":
                 #print(nearest)
-                if nearest > 260:
+                if nearest > 200:
                     if not self.dot_line_detected_time:
 
                         self.dot_line_detected_time = time.time()
@@ -136,6 +136,16 @@ class Camera_subscriber(Node):
                         elif elapsed_time >= 10.0:
                             self.dot_line_sent = False
                             self.dot_line_detected_time = None
+            
+            if class_name == "greenLight":
+                if nearest> 50: 
+                    self.senialesDetectadas.green_light = True
+            elif class_name == "redLight": 
+                if nearest > 50:
+                    self.senialesDetectadas.red_light = True
+            elif class_name == "yellowLight":
+                    if nearest > 50:
+                        self.senialesDetectadas.yellow_light = True
 
 
             # Si la inferencia es diferente a un tipo de línea punteda se calcula
@@ -144,6 +154,7 @@ class Camera_subscriber(Node):
                 if nearest > max_area:
                         max_area = nearest
                         signal_with_max_area = inference
+            
 
 
         # En el caso de que se haya encontrado senial se mandan como true solamente
@@ -160,15 +171,8 @@ class Camera_subscriber(Node):
                         self.senialesDetectadas.give_way = True
                         self.senialesDetectadas.dot_line = False
 
-            elif class_name == "greenLight":
-                if signal_with_max_area.bottom > 115: 
-                    self.senialesDetectadas.green_light = True
-            elif class_name == "redLight": 
-                if signal_with_max_area.bottom > 120:
-                    self.senialesDetectadas.red_light = True
-
             elif class_name == "roadwork": 
-                if signal_with_max_area.bottom > 110:
+                if signal_with_max_area.bottom > 120:
                     self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
@@ -195,9 +199,6 @@ class Camera_subscriber(Node):
                 self.senialesDetectadas.turn_right = True
             elif class_name == "turnRight": 
                 self.senialesDetectadas.turn_left = True
-            elif class_name == "yellowLight":
-                if signal_with_max_area.bottom > 120:
-                    self.senialesDetectadas.yellow_light = True
             
             # Se hace la condición de dirección
             if self.senialesDetectadas.roundabout:
@@ -210,6 +211,7 @@ class Camera_subscriber(Node):
                 elif self.lineaBoth:
                     print("dos")
                     self.senialesDetectadas.turn_right = True
+        
 
         
     

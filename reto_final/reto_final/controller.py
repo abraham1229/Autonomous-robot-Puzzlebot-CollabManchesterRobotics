@@ -68,10 +68,10 @@ class Controller(Node):
         self.Postheta = 0.0
 
         # Valores para toma de decisiones entre cruces.
-        self.distancia_actual = 0.0
-        self.angulo_actual = 0.0
-        self.distancia_deseado = 0.0
-        self.angulo_deseado = 0.0
+        self.tiempo_actual = 0.0
+        self.tiempo_deteccion = 0.0
+        self.tiempo_deseado_recta = 0.0
+        self.tiempo_deseado_angular = 0.0
 
         # Mensaje de que el nodo ha sido inicializado
         self.get_logger().info('Controller node initialized')
@@ -105,48 +105,41 @@ class Controller(Node):
 
         # Se guarda la detección si es que está en un cruce.
         if self.senialesBool.dot_line and not self.cruce:
-            # Se espera un ciclo para leer odometry reiniciado.
-            if self.numDeteccionesStop == 0:
-                self.numDeteccionesStop = 1
-            else:
-                self.cruce = True
-                self.senialCruce = False
-                self.distancia_actual = self.Posx
-                self.angulo_actual = self.Postheta
-                self.numDeteccionesStop = 0
+            self.cruce = True
+            self.senialCruce = False
 
         # En el caso de que se haya detectado la línea punteada:
         if self.cruce:
+            self.tiempo_actual = time.time()
+
             if not self.senialCruce:
                 #Condiciones necesarias cuando tenga cruces
                 #Seguir recto
                 if self.senialesBool.ahead_only:
-                    self.distancia_deseado = 0.25
-                    self.angulo_deseado = 0.0
+                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_angular = 0.0
+                    self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
-                #Girar hacia la izquieda
+                #Girar hacia la derecha
                 elif self.senialesBool.turn_right:
-                    self.distancia_deseado = 0.25
-                    self.angulo_deseado = -1.4
+                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_angular = -3
+                    self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
-                #Girar a hacia la derecha
+                #Girar a hacia la izquierda
                 elif self.senialesBool.turn_left:
-                    self.distancia_deseado = 0.25
-                    self.angulo_deseado = 1.4
+                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_angular = 3
+                    self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
-                #No detectada por la nueva lógica del programa.
-                elif self.senialesBool.roundabout:
-                    self.distancia_deseado = 0.25
-                    self.angulo_deseado = 0.0
-                    self.senialCruce = True
-                
                 # Avanza hasta encontrar la línea
                 elif self.senialesBool.give_way:
-                    self.distancia_deseado = 0.25
-                    self.angulo_deseado = 0.0
+                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_angular = 0.0
+                    self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
                 else:
@@ -155,28 +148,27 @@ class Controller(Node):
                     self.senialCruce = False
             
             else:
-                # Condiciones para que alcance al odometría deseada.
-                if (self.Posx - self.distancia_actual) < self.distancia_deseado:
+
+                # Condiciones para que alcance el tiempo deseados
+                if self.tiempo_deseado_recta+self.tiempo_deteccion > self.tiempo_actual:
                     self.velL = 0.1
                     self.velA = 0.0
 
-                else:
-                    errorTheta = self.Postheta - self.angulo_actual
 
-                    if self.angulo_deseado > 0:
-                        if errorTheta < self.angulo_deseado:
+                else:
+
+                    tiempoNecesario = self.tiempo_deseado_recta+abs(self.tiempo_deseado_angular)+self.tiempo_deteccion
+
+                    if self.tiempo_deseado_angular > 0:
+                        if tiempoNecesario > self.tiempo_actual:
                             self.velL = 0.0
                             self.velA = 0.1
                         else:
                             self.cruce = False
                             self.senialCruce = False
-                    
-                    elif self.angulo_deseado == 0:
-                        self.cruce = False
-                        self.senialCruce = False
-
+                
                     else:
-                        if errorTheta > self.angulo_deseado:
+                        if tiempoNecesario > self.tiempo_actual:
                             self.velL = 0.0
                             self.velA = -0.1
                         else:
