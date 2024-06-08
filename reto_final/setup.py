@@ -29,7 +29,8 @@ setup(
             'controller = reto_final.controller:main',
             'error_line = reto_final.error_line:main',
             'sign_detection = reto_final.sign_detection:main',
-            'sign_information = reto_final.sign_information:main'
+            'sign_information = reto_final.sign_information:main',
+            'vertical_detection = reto_final.vertical_detection:main',
         ],
     },
 )

@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Path.msg"
   "msg/Error.msg"
   "msg/Signal.msg"
+  "msg/Dotline.msg"
   DEPENDENCIES geometry_msgs
 )
 
