@@ -5,7 +5,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
-from msgs_clase.msg import Signal   # type: ignore
+from msgs_clase.msg import Dotline   # type: ignore
 
 from yolov8_msgs.msg import InferenceResult # type: ignore
 from yolov8_msgs.msg import Yolov8Inference # type: ignore
@@ -19,7 +19,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/modelos/dotline.pt')
+        self.model = YOLO('/home/abraham/modelos/dotVertical.pt')
 
         self.yolov8_inference = Yolov8Inference()
 
@@ -29,25 +29,18 @@ class Camera_subscriber(Node):
             self.camera_callback,
             10) 
 
-        self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
-        self.predi_pub = self.create_publisher(Signal, "/signal_bool", 1)
-        self.img_pub = self.create_publisher(Image, "/inference_result", 1)
+        self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference_vertical", 1)
+        self.predi_pub = self.create_publisher(Dotline, "/vertical_bool", 1)
+        self.img_pub = self.create_publisher(Image, "/inference_result_vertical", 1)
         
-        self.valoresObtenidos = []
-
         self.timer_period = 0.2
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
 
-        # Variables para gestionar la señal de stop
-        self.stop_detected_time = None
-        self.stop_signal_sent = False
-
-        # Variables para detectar el dotline
-        self.dot_line_detected_time = None
-        self.dot_line_sent = False
-
+        #Centro de la imágen
+        self.img_center = 340/2  # Width of the image
+    
         
         self.get_logger().info('Sign detection node initialized')
 
@@ -82,119 +75,25 @@ class Camera_subscriber(Node):
         self.escribirMensaje(self.yolov8_inference)
 
         self.yolov8_inference.yolov8_inference.clear()
-        self.valoresObtenidos.clear()
 
     def escribirMensaje(self, yoloInference):
-        self.senialesDetectadas = Signal()
-        max_area = 0
-        signal_with_max_area = None
-
-        vertical_lines_right = []
-        vertical_lines_left = []
-
-        img_width = self.img.shape[1]  # Width of the image
-
-
+        self.senialesDetectadas = Dotline()
 
         for inference in yoloInference.yolov8_inference:
             class_name = inference.class_name
-            nearest = inference.bottom
             
             center_x = (inference.left + inference.right) / 2
             
+            if class_name == "Vertical-dotline":
+                if center_x >  self.img_center: 
+                    self.senialesDetectadas.right = True
+                else: 
+                    self.senialesDetectadas.left = True
 
-            if class_name == "dotLine":
-                print(nearest)
-                if nearest > 0: # 220
-                    if not self.dot_line_detected_time:
-
-                        self.dot_line_detected_time = time.time()
-                        self.senialesDetectadas.dot_line = True
-                        self.dot_line_sent = True
-
-                    else:
-                        elapsed_time = time.time() - self.dot_line_detected_time
-            
-                        if elapsed_time < 2.0:
-                            self.senialesDetectadas.dot_line = True
-
-                        elif elapsed_time >= 10.0:
-                            self.dot_line_sent = False
-                            self.dot_line_detected_time = None
-
-            if class_name == "verticalLine":
-                if center_x > img_width / 2:  # right side of the image
-                    vertical_lines_right.append(inference)
-                else:  # left side of the image
-                    vertical_lines_left.append(inference)
-
-            if class_name != "dotLine":
-                if nearest > max_area:
-                        max_area = nearest
-                        signal_with_max_area = inference
-
-
-        if signal_with_max_area:
-            #self.get_logger().info(f'{signal_with_max_area.bottom})')
-            
-            class_name = signal_with_max_area.class_name
-            if class_name == "aheadOnly": 
-                self.senialesDetectadas.ahead_only = True
-            elif class_name == "giveWay":
-                if self.dot_line_detected_time:
-                    elapsed_time = time.time() - self.dot_line_detected_time
-                    if elapsed_time > 3.0:
-                        self.senialesDetectadas.give_way = True
-                        self.senialesDetectadas.dot_line = False
-
-            elif class_name == "greenLight": 
-                self.senialesDetectadas.green_light = True
-            elif class_name == "redLight": 
-                self.senialesDetectadas.red_light = True
-
-            elif class_name == "roadwork": 
-                if signal_with_max_area.bottom > 80:
-                    self.senialesDetectadas.roadwork = True
-
-            elif class_name == "roundabout":
-                if signal_with_max_area.bottom > 70:
-                    if self.dot_line_detected_time:
-                        elapsed_time = time.time() - self.dot_line_detected_time
-                        if elapsed_time > 2.0:
-                            self.senialesDetectadas.roundabout = False
-                            self.senialesDetectadas.dot_line = False
-
-            elif class_name == "stop":
-                if signal_with_max_area.bottom > 80:
-                    # Si detectamos "stop", verificamos el tiempo
-                    if not self.stop_signal_sent:
-                        self.stop_detected_time = time.time()
-                        self.senialesDetectadas.stop = True
-                        self.stop_signal_sent = True
-                    else:
-                        elapsed_time = time.time() - self.stop_detected_time
-            
-                        if elapsed_time < 2.0:
-                            self.senialesDetectadas.stop = True
-
-                        elif elapsed_time >= 8.0:
-                            self.stop_signal_sent = False
-                            self.stop_detected_time = None
-
-            elif class_name == "turnLeft": 
-                self.senialesDetectadas.turn_right = True
-            elif class_name == "turnRight": 
-                self.senialesDetectadas.turn_left = True
-            elif class_name == "yellowLight":
-                self.senialesDetectadas.yellow_light = True
-        
-        # Condiciones para las líneas verticales
-        if len(vertical_lines_right) == 1 and not vertical_lines_left:
-            self.senialesDetectadas.turn_right = True
-        elif len(vertical_lines_left) == 1 and not vertical_lines_right:
-            self.senialesDetectadas.turn_left = True
-        elif len(vertical_lines_right) >= 2:
-            self.senialesDetectadas.turn_right = True
+        if self.senialesDetectadas.left and self.senialesDetectadas.right:
+            self.senialesDetectadas.left = False
+            self.senialesDetectadas.right = False
+            self.senialesDetectadas.both = True
     
         self.predi_pub.publish(self.senialesDetectadas)
 

@@ -50,8 +50,8 @@ class Controller(Node):
 
         #Variables para el control
         #Theta 
-        self.kpTheta = 0.21
-        self.kdTheta = 0.015
+        self.kpTheta = 0.20
+        self.kdTheta = 0.016
         self.errorPrevio = 0.0
         #Controlar si es que aún no se ha publicado el error.
         self.lecturaError = False
