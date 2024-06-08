@@ -56,7 +56,7 @@ class Controller(Node):
         #Controlar si es que aún no se ha publicado el error.
         self.lecturaError = False
 
-        # Tipo de mensaje para tener seniales detectadas
+        # Tipo de mensaje para tener seniales detectadas (dotLine)
         self.senialesBool = Signal()
         self.cruce = False
         self.senialCruce = False
@@ -118,30 +118,32 @@ class Controller(Node):
         # En el caso de que se haya detectado la línea punteada:
         if self.cruce:
             if not self.senialCruce:
-            
                 #Condiciones necesarias cuando tenga cruces
+                #Seguir recto
                 if self.senialesBool.ahead_only:
                     self.distancia_deseado = 0.3
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
 
-                # 
+                #Girar hacia la izquieda
                 elif self.senialesBool.turn_right:
-                    self.distancia_deseado = 0.3
+                    self.distancia_deseado = 0.25
                     self.angulo_deseado = -1.5
                     self.senialCruce = True
 
-                # Izquierda debe de ser positivo
+                #Girar a hacia la derecha
                 elif self.senialesBool.turn_left:
-                    self.distancia_deseado = 0.3
+                    self.distancia_deseado = 0.25
                     self.angulo_deseado = 1.5
                     self.senialCruce = True
 
+                #No detectada por la nueva lógica del programa.
                 elif self.senialesBool.roundabout:
                     self.distancia_deseado = 0.3
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
-
+                
+                # Avanza hasta encontrar la línea
                 elif self.senialesBool.give_way:
                     self.distancia_deseado = 0.3
                     self.angulo_deseado = 0.0
@@ -153,7 +155,7 @@ class Controller(Node):
                     self.senialCruce = False
             
             else:
-                
+                # Condiciones para que alcance al odometría deseada.
                 if (self.Posx - self.distancia_actual) < self.distancia_deseado:
                     self.velL = 0.1
                     self.velA = 0.0
