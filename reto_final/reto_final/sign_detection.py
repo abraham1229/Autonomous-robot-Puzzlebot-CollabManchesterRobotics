@@ -19,7 +19,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/modelos/dotline.pt')
+        self.model = YOLO('/home/abraham/modelos/DeteccionSeniales4_340.pt')
 
         self.yolov8_inference = Yolov8Inference()
         # Realiza la suscripción de la imágen
@@ -172,12 +172,7 @@ class Camera_subscriber(Node):
                     self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
-                #if signal_with_max_area.bottom > 70:
-                if self.dot_line_detected_time:
-                    elapsed_time = time.time() - self.dot_line_detected_time
-                    if elapsed_time > 2.0:
-                        self.senialesDetectadas.roundabout = True
-                        self.senialesDetectadas.dot_line = False
+                self.senialesDetectadas.roundabout = True
 
             elif class_name == "stop":
                 if signal_with_max_area.bottom > 110:
@@ -206,12 +201,14 @@ class Camera_subscriber(Node):
             
             # Se hace la condición de dirección
             if self.senialesDetectadas.roundabout:
-                    
                 if self.lineaLeft:
+                    print("izquierda")
                     self.senialesDetectadas.turn_left = True
                 elif self.lineaRight:
+                    print("Derecha")
                     self.senialesDetectadas.turn_right = True
                 elif self.lineaBoth:
+                    print("dos")
                     self.senialesDetectadas.turn_right = True
 
         
