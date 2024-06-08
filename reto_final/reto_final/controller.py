@@ -121,31 +121,31 @@ class Controller(Node):
                 #Condiciones necesarias cuando tenga cruces
                 #Seguir recto
                 if self.senialesBool.ahead_only:
-                    self.distancia_deseado = 0.3
+                    self.distancia_deseado = 0.25
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
 
                 #Girar hacia la izquieda
                 elif self.senialesBool.turn_right:
                     self.distancia_deseado = 0.25
-                    self.angulo_deseado = -1.5
+                    self.angulo_deseado = -1.4
                     self.senialCruce = True
 
                 #Girar a hacia la derecha
                 elif self.senialesBool.turn_left:
                     self.distancia_deseado = 0.25
-                    self.angulo_deseado = 1.5
+                    self.angulo_deseado = 1.4
                     self.senialCruce = True
 
                 #No detectada por la nueva lógica del programa.
                 elif self.senialesBool.roundabout:
-                    self.distancia_deseado = 0.3
+                    self.distancia_deseado = 0.25
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
                 
                 # Avanza hasta encontrar la línea
                 elif self.senialesBool.give_way:
-                    self.distancia_deseado = 0.3
+                    self.distancia_deseado = 0.25
                     self.angulo_deseado = 0.0
                     self.senialCruce = True
 
