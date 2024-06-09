@@ -130,21 +130,22 @@ class Camera_subscriber(Node):
                     else:
                         elapsed_time = time.time() - self.dot_line_detected_time
             
-                        if elapsed_time < 2.0:
+                        if elapsed_time < 3.0:
                             self.senialesDetectadas.dot_line = True
 
-                        elif elapsed_time >= 10.0:
+                        elif elapsed_time >= 15.0:
                             self.dot_line_sent = False
                             self.dot_line_detected_time = None
             
+            # Se pone en un alta priorida el semaforo.
             if class_name == "greenLight":
-                if nearest> 50: 
+                if nearest> 120: 
                     self.senialesDetectadas.green_light = True
             elif class_name == "redLight": 
-                if nearest > 50:
+                if nearest > 120:
                     self.senialesDetectadas.red_light = True
             elif class_name == "yellowLight":
-                    if nearest > 50:
+                    if nearest > 120:
                         self.senialesDetectadas.yellow_light = True
 
 
@@ -158,13 +159,15 @@ class Camera_subscriber(Node):
 
 
         # En el caso de que se haya encontrado senial se mandan como true solamente
-        # si están a cierta distancia.
+        # si están a cierta distancia. (dependiendo al altura de cada senial se calcula la distancia en la que está)
         if signal_with_max_area:
             #self.get_logger().info(f'{signal_with_max_area.bottom})')
             class_name = signal_with_max_area.class_name
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
+
             elif class_name == "giveWay":
+                # Se mantiene en dotline por tres segundos para que se detenga y luego avance
                 if self.dot_line_detected_time:
                     elapsed_time = time.time() - self.dot_line_detected_time
                     if elapsed_time > 3.0:
@@ -191,25 +194,26 @@ class Camera_subscriber(Node):
                         if elapsed_time < 5.0:
                             self.senialesDetectadas.stop = True
 
-                        elif elapsed_time >= 10.0:
+                        elif elapsed_time >= 12.0:
                             self.stop_signal_sent = False
                             self.stop_detected_time = None
 
+            # Se guarda la dirección del giro dependiendo de el lado en el que detecto la línea.
             elif class_name == "turnLeft": 
                 self.senialesDetectadas.turn_right = True
             elif class_name == "turnRight": 
                 self.senialesDetectadas.turn_left = True
             
-            # Se hace la condición de dirección
+            # Se hace la condición de dirección de rondabout
+            # para que siga el retorno
             if self.senialesDetectadas.roundabout:
                 if self.lineaLeft:
-                    print("izquierda")
                     self.senialesDetectadas.turn_left = True
+
                 elif self.lineaRight:
-                    print("Derecha")
                     self.senialesDetectadas.turn_right = True
+                
                 elif self.lineaBoth:
-                    print("dos")
                     self.senialesDetectadas.turn_right = True
         
 
