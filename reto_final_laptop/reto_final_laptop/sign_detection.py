@@ -138,14 +138,17 @@ class Camera_subscriber(Node):
             
             # Se pone en un alta priorida el semaforo.
             if class_name == "greenLight":
-                if nearest> 120: 
+                self.get_logger().info(f'{nearest})')
+                if nearest> 125: 
                     self.senialesDetectadas.green_light = True
-            elif class_name == "redLight": 
-                if nearest > 120:
+            elif class_name == "redLight":
+                self.get_logger().info(f'{nearest})') 
+                if nearest > 125:
                     self.senialesDetectadas.red_light = True
             elif class_name == "yellowLight":
-                    if nearest > 120:
-                        self.senialesDetectadas.yellow_light = True
+                self.get_logger().info(f'{nearest})')
+                if nearest > 125:
+                    self.senialesDetectadas.yellow_light = True
 
 
             # Si la inferencia es diferente a un tipo de línea punteda se calcula
@@ -160,7 +163,7 @@ class Camera_subscriber(Node):
         # En el caso de que se haya encontrado senial se mandan como true solamente
         # si están a cierta distancia. (dependiendo al altura de cada senial se calcula la distancia en la que está)
         if signal_with_max_area:
-            #self.get_logger().info(f'{signal_with_max_area.bottom})')
+            
             class_name = signal_with_max_area.class_name
             if class_name == "aheadOnly": 
                 self.senialesDetectadas.ahead_only = True
@@ -174,14 +177,14 @@ class Camera_subscriber(Node):
                         self.senialesDetectadas.dot_line = False
 
             elif class_name == "roadwork": 
-                if signal_with_max_area.bottom > 120:
+                if signal_with_max_area.bottom > 137:
                     self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
                 self.senialesDetectadas.roundabout = True
 
-            elif class_name == "stop":
-                if signal_with_max_area.bottom > 110:
+            elif class_name == "stop":  
+                if signal_with_max_area.bottom > 137:
                     # Si detectamos "stop", verificamos el tiempo
                     if not self.stop_signal_sent:
                         self.stop_detected_time = time.time()
