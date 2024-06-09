@@ -120,24 +120,24 @@ class Camera_subscriber(Node):
              # Se pone en un alta priorida el semaforo.
             if class_name == "greenLight":
                 self.get_logger().info(f'{nearest})')
-                if nearest> 112: 
+                if nearest> 110: 
                     self.senialesDetectadas.green_light = True
             elif class_name == "redLight":
                 self.get_logger().info(f'{nearest})') 
-                if nearest > 112:
+                if nearest > 110:
                     self.senialesDetectadas.red_light = True
                     return
                 
             elif class_name == "yellowLight":
                 self.get_logger().info(f'{nearest})')
-                if nearest > 112:
+                if nearest > 110:
                     self.senialesDetectadas.yellow_light = True
             
             # Si es dotLine se manda el mensaje para saber que se encuentra en 
             # un cruce.
             if class_name == "dotLine":
                 print(nearest)
-                if nearest > 210: # 200
+                if nearest > 205: # 200
                     if self.senialesDetectadas.yellow_light:
                         self.senialesDetectadas.yellow_light = False
                         self.senialesDetectadas.red_light = True
