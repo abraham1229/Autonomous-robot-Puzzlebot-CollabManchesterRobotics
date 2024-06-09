@@ -94,7 +94,7 @@ class Camera_subscriber(Node):
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
 
-        self.img_pub.publish(img_msg)
+        #self.img_pub.publish(img_msg)
         #self.yolov8_pub.publish(self.yolov8_inference)
 
         self.escribirMensaje(self.yolov8_inference)
@@ -120,17 +120,17 @@ class Camera_subscriber(Node):
              # Se pone en un alta priorida el semaforo.
             if class_name == "greenLight":
                 self.get_logger().info(f'{nearest})')
-                if nearest> 110: 
+                if nearest> 115: 
                     self.senialesDetectadas.green_light = True
             elif class_name == "redLight":
                 self.get_logger().info(f'{nearest})') 
-                if nearest > 110:
+                if nearest > 115:
                     self.senialesDetectadas.red_light = True
                     return
                 
             elif class_name == "yellowLight":
                 self.get_logger().info(f'{nearest})')
-                if nearest > 110:
+                if nearest > 115:
                     self.senialesDetectadas.yellow_light = True
             
             # Si es dotLine se manda el mensaje para saber que se encuentra en 

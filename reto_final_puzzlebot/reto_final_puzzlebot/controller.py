@@ -199,6 +199,7 @@ class Controller(Node):
         elif self.senialesBool.red_light:
             self.velA = 0.0
             self.velL = 0.0
+            self.senialCruce = False
 
         elif self.senialesBool.yellow_light:
             self.velL = 0.04
