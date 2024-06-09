@@ -99,6 +99,8 @@ class Camera_subscriber(Node):
 
         self.escribirMensaje(self.yolov8_inference)
 
+        self.predi_pub.publish(self.senialesDetectadas)
+
         self.yolov8_inference.yolov8_inference.clear()
         self.valoresObtenidos.clear()
 
@@ -114,43 +116,51 @@ class Camera_subscriber(Node):
         for inference in yoloInference.yolov8_inference:
             class_name = inference.class_name
             nearest = inference.bottom
+
+             # Se pone en un alta priorida el semaforo.
+            if class_name == "greenLight":
+                self.get_logger().info(f'{nearest})')
+                if nearest> 112: 
+                    self.senialesDetectadas.green_light = True
+            elif class_name == "redLight":
+                self.get_logger().info(f'{nearest})') 
+                if nearest > 112:
+                    self.senialesDetectadas.red_light = True
+                    return
+                
+            elif class_name == "yellowLight":
+                self.get_logger().info(f'{nearest})')
+                if nearest > 112:
+                    self.senialesDetectadas.yellow_light = True
             
             # Si es dotLine se manda el mensaje para saber que se encuentra en 
             # un cruce.
             if class_name == "dotLine":
-                #print(nearest)
-                if nearest > 200:
-                    if not self.dot_line_detected_time:
-
-                        self.dot_line_detected_time = time.time()
-                        self.senialesDetectadas.dot_line = True
-                        self.dot_line_sent = True
-
+                print(nearest)
+                if nearest > 210: # 200
+                    if self.senialesDetectadas.yellow_light:
+                        self.senialesDetectadas.yellow_light = False
+                        self.senialesDetectadas.red_light = True
+                        return
+                    
                     else:
-                        elapsed_time = time.time() - self.dot_line_detected_time
-            
-                        if elapsed_time < 3.0:
+                        
+                        if not self.dot_line_detected_time:
+                            self.dot_line_detected_time = time.time()
                             self.senialesDetectadas.dot_line = True
+                            self.dot_line_sent = True
 
-                        elif elapsed_time >= 15.0:
-                            self.dot_line_sent = False
-                            self.dot_line_detected_time = None
+                        else:
+                            
+                            elapsed_time = time.time() - self.dot_line_detected_time
+                
+                            if elapsed_time < 3.0:
+                                self.senialesDetectadas.dot_line = True
+
+                            elif elapsed_time >= 15.0:
+                                self.dot_line_sent = False
+                                self.dot_line_detected_time = None
             
-            # Se pone en un alta priorida el semaforo.
-            if class_name == "greenLight":
-                self.get_logger().info(f'{nearest})')
-                if nearest> 125: 
-                    self.senialesDetectadas.green_light = True
-            elif class_name == "redLight":
-                self.get_logger().info(f'{nearest})') 
-                if nearest > 125:
-                    self.senialesDetectadas.red_light = True
-            elif class_name == "yellowLight":
-                self.get_logger().info(f'{nearest})')
-                if nearest > 125:
-                    self.senialesDetectadas.yellow_light = True
-
-
             # Si la inferencia es diferente a un tipo de línea punteda se calcula
             # cual es el más cercano
             if class_name != "dotLine":
@@ -217,11 +227,6 @@ class Camera_subscriber(Node):
                 
                 elif self.lineaBoth:
                     self.senialesDetectadas.turn_left = True
-        
-
-        
-    
-        self.predi_pub.publish(self.senialesDetectadas)
 
 
 
