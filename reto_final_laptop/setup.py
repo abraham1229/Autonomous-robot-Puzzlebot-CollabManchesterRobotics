@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'sign_detection = reto_final_laptop.sign_detection:main'
+            'sign_detection = reto_final_laptop.sign_detection:main',
+            'vertical_detection = reto_final_laptop.vertical_detection:main'
         ],
     },
 )

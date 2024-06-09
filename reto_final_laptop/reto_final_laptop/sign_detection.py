@@ -213,7 +213,7 @@ class Camera_subscriber(Node):
                     self.senialesDetectadas.turn_right = True
                 
                 elif self.lineaBoth:
-                    self.senialesDetectadas.turn_right = True
+                    self.senialesDetectadas.turn_left = True
         
 
         
