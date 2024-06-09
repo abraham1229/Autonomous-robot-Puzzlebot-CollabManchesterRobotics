@@ -25,7 +25,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'odometry = reto_final.odometry:main',
             'controller = reto_final.controller:main',
             'error_line = reto_final.error_line:main',
             'sign_detection = reto_final.sign_detection:main',

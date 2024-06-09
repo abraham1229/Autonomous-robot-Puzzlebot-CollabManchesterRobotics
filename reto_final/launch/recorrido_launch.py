@@ -6,38 +6,19 @@ from launch import LaunchDescription
 
 def generate_launch_description():
 
-    #Se declara la dirección del launchfile
-    config = os.path.join(
-        get_package_share_directory('reto_final'),
-        'config',
-        'params.yaml'
-        )
-    
-
-    odometry_node = Node(
-        package='reto_final',
-        executable='odometry',
-        output='screen'
-    )
-
+    # Se obtiene el nodo que calcula el error para el seguidor de línea
     error_line = Node(
         package='reto_final',
         executable='error_line',
         output='screen'
     )
-
+    
+    # Se obtiene el nodo que calcula el control para el recorrido.
     controller = Node(
         package='reto_final',
         executable='controller',
         output='screen'
     )
-
-    sign_information = Node(
-        package='reto_final',
-        executable='sign_information',
-        output='screen'
-    )
     
-    
-    l_d = LaunchDescription([error_line,odometry_node,controller])
+    l_d = LaunchDescription([error_line,controller])
     return l_d
