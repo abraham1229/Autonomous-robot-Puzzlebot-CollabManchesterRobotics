@@ -26,8 +26,8 @@ setup(
     entry_points={
         'console_scripts': [
             'controller = reto_final_puzzlebot.controller:main',
-            'error_line = reto_final.error_line:main',
-            'sign_information = reto_final.sign_information:main'
+            'error_line = reto_final_puzzlebot.error_line:main',
+            'sign_information = reto_final_puzzlebot.sign_information:main'
         ],
     },
 )
