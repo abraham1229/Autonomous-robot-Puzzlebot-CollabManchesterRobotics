@@ -3,12 +3,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32
 from msgs_clase.msg import Signal  # type: ignore
 from geometry_msgs.msg import Twist
-import math
 import time
-
-from yolov8_msgs.msg import InferenceResult # type: ignore
-from yolov8_msgs.msg import Yolov8Inference # type: ignore
-
 
 class Controller(Node):
     def __init__(self):
