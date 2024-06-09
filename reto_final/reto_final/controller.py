@@ -96,28 +96,28 @@ class Controller(Node):
                 #Condiciones necesarias cuando tenga cruces
                 #Seguir recto
                 if self.senialesBool.ahead_only:
-                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_recta = 3.5
                     self.tiempo_deseado_angular = 0.0
                     self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
                 #Girar hacia la derecha
                 elif self.senialesBool.turn_right:
-                    self.tiempo_deseado_recta = 3.4
-                    self.tiempo_deseado_angular = -3
+                    self.tiempo_deseado_recta = 3.5
+                    self.tiempo_deseado_angular = -2.7
                     self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
                 #Girar a hacia la izquierda
                 elif self.senialesBool.turn_left:
-                    self.tiempo_deseado_recta = 3.4
-                    self.tiempo_deseado_angular = 3
+                    self.tiempo_deseado_recta = 3.5
+                    self.tiempo_deseado_angular = 2.7
                     self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
 
                 # Avanza hasta encontrar la línea
                 elif self.senialesBool.give_way:
-                    self.tiempo_deseado_recta = 3.4
+                    self.tiempo_deseado_recta = 3.5
                     self.tiempo_deseado_angular = 0.0
                     self.tiempo_deteccion = self.tiempo_actual
                     self.senialCruce = True
