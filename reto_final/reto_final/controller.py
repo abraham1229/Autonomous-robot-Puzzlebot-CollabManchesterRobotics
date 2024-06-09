@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32,Float32
-from msgs_clase.msg import Vector,Signal  # type: ignore
+from std_msgs.msg import Float32
+from msgs_clase.msg import Signal  # type: ignore
 from geometry_msgs.msg import Twist
 import math
 import time

@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Int32
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
@@ -44,15 +44,6 @@ class ColorDetectionNode(Node):
             self.imgLecture = True
         else:
             self.imgLecture = False
-
-        # try:
-        #     self.cameraImg = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        #     self.imgLecture = True
-            
-        # except Exception as e:
-        #     self.imgLecture = False
-        #     self.get_logger().info(f'Failed to process image: {str(e)}')
-
     
     def line_detection_callback(self):
         if self.imgLecture:
@@ -98,11 +89,6 @@ class ColorDetectionNode(Node):
         #Imagen a escala de grises
         img_g = cv2.cvtColor(filtro_median, cv2.COLOR_BGR2GRAY)
         
-        
-        # Se hace la binarización normal
-        # _, imagen_binarizada = cv2.threshold(img_g, 85, 255, cv2.THRESH_BINARY)
-        # self.imagenProcesada = imagen_binarizada
-
         # Binarización de tipo Otsu
         # Apply Otsu's thresholding
         _, imagen_binarizada = cv2.threshold(img_g, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -112,13 +98,7 @@ class ColorDetectionNode(Node):
         
     # Función que calcula el error con los centroides
     def pendiente_centroides(self, img_bn,image):
-        # #Operaciones morfologicas
-        # SE_d = np.ones((5,5), np.uint8)
-        # morf_d = cv2.dilate(img_bn, SE_d, iterations = 1)
-        # SE_d2 = np.ones((4,4), np.uint8)
-        # morf_d2 = cv2.dilate(morf_d, SE_d2, iterations = 2)
-        # SE_d3 = np.ones((2,2), np.uint8)
-        # morf_d3 = cv2.dilate(morf_d2, SE_d3, iterations = 2)
+        #Operación morfológica
         SE_e = np.ones((5,5), np.uint8)
         morf_d3 = cv2.erode(img_bn, SE_e, iterations = 5)
         #self.imagenProcesada = morf_d3
