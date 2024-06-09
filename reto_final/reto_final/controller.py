@@ -33,14 +33,7 @@ class Controller(Node):
             '/signal_bool',
             self.deteccion_callback,
             rclpy.qos.qos_profile_sensor_data )
-        
-        # Suscripción para moverse x distancia y y grados para pasar el cruce
-        self.subscription_odometry = self.create_subscription(
-            Vector,
-            'odometria',
-            self.odometry_callback,
-            rclpy.qos.qos_profile_sensor_data )
-        
+            
         # Velocidades que se le darán al robot
         self.velL = 0.0
         self.velA = 0.0
@@ -61,11 +54,6 @@ class Controller(Node):
         self.cruce = False
         self.senialCruce = False
         self.numDeteccionesStop = 0
-
-        # Variables para almacenar la posición actual del robot (odometría)
-        self.Posx = 0.0
-        self.Posy = 0.0
-        self.Postheta = 0.0
 
         # Valores para toma de decisiones entre cruces.
         self.tiempo_actual = 0.0
@@ -91,15 +79,7 @@ class Controller(Node):
         #Si el dato es nulo no se guarda
         if msg is not None:
             self.senialesBool = msg
-    
-    # Callback para recibir la posición actual del robot
-    def odometry_callback(self, msg):
-        #Si el dato es nulo no se guarda
-        if msg is not None:
-            self.Posx = msg.x
-            self.Posy = msg.y
-            self.Postheta = msg.theta
-            
+                
     # Callback del temporizador para controlar el movimiento del robot
     def timer_callback_controller(self):
 
