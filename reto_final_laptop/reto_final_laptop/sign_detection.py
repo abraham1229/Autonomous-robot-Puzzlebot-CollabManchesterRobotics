@@ -18,7 +18,8 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/modelos/DeteccionSeniales4_340.pt')
+        #self.model = YOLO('/home/abraham/modelos/DeteccionSeniales4_340.pt')
+        self.model = YOLO('/home/abraham/modelos/ultima.pt')
 
         self.yolov8_inference = Yolov8Inference()
         # Realiza la suscripción de la imágen
