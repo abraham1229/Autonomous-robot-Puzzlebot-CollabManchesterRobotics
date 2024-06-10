@@ -230,6 +230,17 @@ class Camera_subscriber(Node):
                     self.senialesDetectadas.turn_left = True
 
 
+            if self.senialesDetectadas.turn_right or self.senialesDetectadas.turn_left:
+                if self.lineaLeft:
+                    self.senialesDetectadas.turn_left = True
+                    self.senialesDetectadas.turn_right = False
+                    
+                elif self.lineaRight:
+                    self.senialesDetectadas.turn_right = True
+                    self.senialesDetectadas.turn_left = False
+
+
+
 
 def main(args=None):
     rclpy.init(args=args)
