@@ -18,7 +18,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('/home/abraham/modelos/DeteccionSeniales4_340.pt')
+        self.model = YOLO('/home/abraham/modelos/ultima.pt')
 
         self.yolov8_inference = Yolov8Inference()
         # Realiza la suscripción de la imágen
@@ -59,7 +59,8 @@ class Camera_subscriber(Node):
         self.lineaLeft = False
         self.lineaBoth = False
 
-        
+
+        # Se manda mensaje que el nodo se ha inicializado correctamente.
         self.get_logger().info('Sign detection node initialized')
 
     def camera_callback(self, data):
@@ -94,7 +95,7 @@ class Camera_subscriber(Node):
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
 
-        #self.img_pub.publish(img_msg)
+        self.img_pub.publish(img_msg)
         #self.yolov8_pub.publish(self.yolov8_inference)
 
         self.escribirMensaje(self.yolov8_inference)
@@ -119,25 +120,25 @@ class Camera_subscriber(Node):
 
              # Se pone en un alta priorida el semaforo.
             if class_name == "greenLight":
-                self.get_logger().info(f'{nearest})')
+                #self.get_logger().info(f'{nearest})')
                 if nearest> 105: 
                     self.senialesDetectadas.green_light = True
             elif class_name == "redLight":
-                self.get_logger().info(f'{nearest})') 
+                #self.get_logger().info(f'{nearest})') 
                 if nearest > 105:
                     self.senialesDetectadas.red_light = True
                     return
                 
             elif class_name == "yellowLight":
-                self.get_logger().info(f'{nearest})')
+                #self.get_logger().info(f'{nearest})')
                 if nearest > 105:
                     self.senialesDetectadas.yellow_light = True
             
             # Si es dotLine se manda el mensaje para saber que se encuentra en 
             # un cruce.
             if class_name == "dotLine":
-                print(nearest)
-                if nearest > 195: # 200
+                #print(nearest)
+                if nearest > 200: # 200
                     if self.senialesDetectadas.yellow_light:
                         self.senialesDetectadas.yellow_light = False
                         self.senialesDetectadas.red_light = True
@@ -187,7 +188,7 @@ class Camera_subscriber(Node):
                         self.senialesDetectadas.dot_line = False
 
             elif class_name == "roadwork": 
-                if signal_with_max_area.bottom > 125:
+                if signal_with_max_area.bottom > 120:
                     self.senialesDetectadas.roadwork = True
 
             elif class_name == "roundabout":
@@ -195,20 +196,21 @@ class Camera_subscriber(Node):
 
             elif class_name == "stop":  
                 if signal_with_max_area.bottom > 125:
+                    self.senialesDetectadas.stop = True
                     # Si detectamos "stop", verificamos el tiempo
-                    if not self.stop_signal_sent:
-                        self.stop_detected_time = time.time()
-                        self.senialesDetectadas.stop = True
-                        self.stop_signal_sent = True
-                    else:
-                        elapsed_time = time.time() - self.stop_detected_time
+                    # if not self.stop_signal_sent:
+                    #     self.stop_detected_time = time.time()
+                    #     self.senialesDetectadas.stop = True
+                    #     self.stop_signal_sent = True
+                    # else:
+                    #     elapsed_time = time.time() - self.stop_detected_time
             
-                        if elapsed_time < 5.0:
-                            self.senialesDetectadas.stop = True
+                    #     if elapsed_time < 5.0:
+                    #         self.senialesDetectadas.stop = True
 
-                        elif elapsed_time >= 12.0:
-                            self.stop_signal_sent = False
-                            self.stop_detected_time = None
+                    #     elif elapsed_time >= 12.0:
+                    #         self.stop_signal_sent = False
+                    #         self.stop_detected_time = None
 
             # Se guarda la dirección del giro dependiendo de el lado en el que detecto la línea.
             elif class_name == "turnLeft": 
@@ -221,12 +223,15 @@ class Camera_subscriber(Node):
             if self.senialesDetectadas.roundabout:
                 if self.lineaLeft:
                     self.senialesDetectadas.turn_left = True
+                    return
 
                 elif self.lineaRight:
                     self.senialesDetectadas.turn_right = True
+                    return
                 
                 elif self.lineaBoth:
-                    self.senialesDetectadas.turn_right = True
+                    self.senialesDetectadas.turn_left = True
+                    return
 
 
             if self.senialesDetectadas.turn_right or self.senialesDetectadas.turn_left:
@@ -237,6 +242,9 @@ class Camera_subscriber(Node):
                 elif self.lineaRight:
                     self.senialesDetectadas.turn_right = True
                     self.senialesDetectadas.turn_left = False
+        
+                elif self.lineaBoth:
+                    self.senialesDetectadas.turn_right = True
 
 
 
