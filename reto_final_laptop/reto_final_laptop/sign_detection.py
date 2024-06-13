@@ -17,9 +17,10 @@ class Camera_subscriber(Node):
 
     def __init__(self):
         super().__init__('camera_subscriber')
-
+        
+        # Se agrega la dirección del modelo de YOLO que se usará
         self.model = YOLO('/home/abraham/modelos/ultima.pt')
-
+        # Se crea el mensaje para YOLO
         self.yolov8_inference = Yolov8Inference()
         # Realiza la suscripción de la imágen
         self.subscription = self.create_subscription(
@@ -35,15 +36,19 @@ class Camera_subscriber(Node):
             self.vertical_callback,
             10) 
 
+        # Se crean los publicadores necesarios
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.predi_pub = self.create_publisher(Signal, "/signal_bool", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
         
+        # Lista en la que se guardarán las inferencias en cada ciclo
         self.valoresObtenidos = []
 
+        # Se define el tiempo y el callback
         self.timer_period = 0.2
         self.timer = self.create_timer(self.timer_period, self.timer_callback_signs)
 
+        # Se define imágen inicial globalmente.
         self.img = np.ones((480, 640, 3), dtype=np.uint8)
 
         # Variables para gestionar la señal de stop
@@ -63,6 +68,9 @@ class Camera_subscriber(Node):
         # Se manda mensaje que el nodo se ha inicializado correctamente.
         self.get_logger().info('Sign detection node initialized')
 
+
+    # Se hacen los callback de los tópicos, se tiene que si es que aún no llega ningún dato
+    # que no lo lea
     def camera_callback(self, data):
         if data is not None:
             self.img = bridge.imgmsg_to_cv2(data, "bgr8")
@@ -73,8 +81,9 @@ class Camera_subscriber(Node):
             self.lineaRight = data.right
             self.lineaLeft = data.left
     
-
+    # Callback que define las condiciones de cada señal
     def timer_callback_signs(self):
+        # Se hace la predicción de las señales
         results = self.model(source=self.img, conf=0.4, verbose=False)
         self.yolov8_inference.header.frame_id = "inference"
         self.yolov8_inference.header.stamp = self.get_clock().now().to_msg()
@@ -94,14 +103,18 @@ class Camera_subscriber(Node):
 
         annotated_frame = results[0].plot()
         img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
-
+        # Se publican las inferencias obtenidas.
         self.img_pub.publish(img_msg)
         #self.yolov8_pub.publish(self.yolov8_inference)
 
+        # Se le llama a la función que pone True solamente a las señales que pasen ciertas 
+        # condiciones
         self.escribirMensaje(self.yolov8_inference)
 
+        # Se publican los booleanos detectados
         self.predi_pub.publish(self.senialesDetectadas)
 
+        # Se limpian las listas para el siguente ciclo
         self.yolov8_inference.yolov8_inference.clear()
         self.valoresObtenidos.clear()
 
@@ -139,11 +152,14 @@ class Camera_subscriber(Node):
             if class_name == "dotLine":
                 #print(nearest)
                 if nearest > 200: # 200
+                    # Si es que sigue viendo el dotline se manda que se detenga el robot
                     if self.senialesDetectadas.yellow_light:
                         self.senialesDetectadas.yellow_light = False
                         self.senialesDetectadas.red_light = True
                         return
                     
+                    # En otro caso solamente se manda por cierto tiempo y se ignora
+                    # por 15 segundos para evitar falsos positivos del mismo cruce.
                     else:
                         
                         if not self.dot_line_detected_time:
@@ -197,20 +213,6 @@ class Camera_subscriber(Node):
             elif class_name == "stop":  
                 if signal_with_max_area.bottom > 125:
                     self.senialesDetectadas.stop = True
-                    # Si detectamos "stop", verificamos el tiempo
-                    # if not self.stop_signal_sent:
-                    #     self.stop_detected_time = time.time()
-                    #     self.senialesDetectadas.stop = True
-                    #     self.stop_signal_sent = True
-                    # else:
-                    #     elapsed_time = time.time() - self.stop_detected_time
-            
-                    #     if elapsed_time < 5.0:
-                    #         self.senialesDetectadas.stop = True
-
-                    #     elif elapsed_time >= 12.0:
-                    #         self.stop_signal_sent = False
-                    #         self.stop_detected_time = None
 
             # Se guarda la dirección del giro dependiendo de el lado en el que detecto la línea.
             elif class_name == "turnLeft": 
@@ -233,7 +235,8 @@ class Camera_subscriber(Node):
                     self.senialesDetectadas.turn_left = True
                     return
 
-
+            # Si es que no tiene sentido la detección de turn right o left porque no es posible
+            # Se manda el contrario
             if self.senialesDetectadas.turn_right or self.senialesDetectadas.turn_left:
                 if self.lineaLeft:
                     self.senialesDetectadas.turn_left = True
