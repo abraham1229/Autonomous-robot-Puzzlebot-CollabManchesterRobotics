@@ -70,7 +70,7 @@ class Camera_subscriber(Node):
         img_msg = bridge.cv2_to_imgmsg(annotated_frame, encoding="bgr8")
 
         # Se publican las inferencias.
-        self.img_pub.publish(img_msg)
+        #self.img_pub.publish(img_msg)
         #self.yolov8_pub.publish(self.yolov8_inference)
 
         # Se le llama a funció la cual decidirá de que lado se encuentran las líneas verticales si 

@@ -52,7 +52,7 @@ class ColorDetectionNode(Node):
             
             #self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada))
             self.pub_line_image.publish(self.bridge.cv2_to_imgmsg(self.imagenProcesada,encoding="bgr8"))
-            #self.get_logger().info(f'{self.errorMsg.data})')
+    
         else:
             self.get_logger().info(f'Failed to process image')
 
